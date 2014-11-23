@@ -1,0 +1,6 @@
+#!/bin/bash
+# The logic to start up your application should be put in this script.
+# The application will work only if it binds to
+# $OPENSHIFT_DIY_IP:8080
+cd $OPENSHIFT_REPO_DIR
+nohup mvn -Dmaven.test.skip=true -s $OPENSHIFT_DATA_DIR/settings.xml -f $OPENSHIFT_REPO_DIR/pom.xml -Popenshift exec:java &
