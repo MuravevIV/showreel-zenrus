@@ -18,9 +18,9 @@ Add this upstream finatra quickstart repo
     git remote add upstream -m master https://github.com/MuravevIV/finatra-openshift-quickstart.git
     git pull -s recursive -X theirs upstream master
 
-Clean (if necessary) and change project attributes in pom.xml (groupId, artifactId, name, build.finalName, etc.)
+Clean up your project and edit attributes in pom.xml (groupId, artifactId, name, build.finalName, etc.)
 
-    rm -rf diy/ misc/ README.md LICENSE
+    rm -rf diy/ misc/ src/main/webapp README.md LICENSE
     # edit pom.xml
     git commit -am "cleaned"
 
