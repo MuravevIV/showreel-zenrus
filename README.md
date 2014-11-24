@@ -24,8 +24,6 @@ Clean (if necessary) and change project attributes in pom.xml (groupId, artifact
     # edit pom.xml
     git commit -am "cleaned"
 
-Clean (if necessary)
-
 Then push the repo upstream
 
     git push origin master
