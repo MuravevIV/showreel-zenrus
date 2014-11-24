@@ -20,7 +20,7 @@ Add this upstream finatra quickstart repo
 
 Clean up your project and edit attributes in pom.xml (groupId, artifactId, name, build.finalName, etc.)
 
-    rm -rf diy/ misc/ src/main/webapp README.md LICENSE
+    rm -rf diy/ misc/ README.md LICENSE
     # edit pom.xml
     git commit -am "cleaned"
 
