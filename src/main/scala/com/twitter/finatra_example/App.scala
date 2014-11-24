@@ -11,7 +11,7 @@ object App extends FinatraServer {
         /**
          * Basic Example
          *
-         * curl http://localhost:7070/ => "hello world"
+         * curl http://${server.url}/ => "hello world"
          */
         get("/") { request =>
             render.static("index.html").toFuture
@@ -24,7 +24,7 @@ object App extends FinatraServer {
         /**
          * Route parameters
          *
-         * curl http://localhost:7070/user/dave => "hello dave"
+         * curl http://${server.url}/user/dave => "hello dave"
          */
         get("/user/:username") { request =>
             val username = request.routeParams.getOrElse("username", "default_user")
@@ -34,7 +34,7 @@ object App extends FinatraServer {
         /**
          * Setting Headers
          *
-         * curl -I http://localhost:7070/headers => "Foo:Bar"
+         * curl -I http://${server.url}/headers => "Foo:Bar"
          */
         get("/headers") { request =>
             render.plain("look at headers").header("Foo", "Bar").toFuture
@@ -43,7 +43,7 @@ object App extends FinatraServer {
         /**
          * Rendering json
          *
-         * curl -I http://localhost:7070/data.json => "{foo:bar}"
+         * curl -I http://${server.url}/data.json => "{foo:bar}"
          */
         get("/data.json") {
             request => render.json(Map("foo" -> "bar")).toFuture
@@ -52,7 +52,7 @@ object App extends FinatraServer {
         /**
          * Query params
          *
-         * curl http://localhost:7070/search?q=foo => "no results for foo"
+         * curl http://${server.url}/search?q=foo => "no results for foo"
          */
         get("/search") { request =>
             request.params.get("q") match {
@@ -64,16 +64,16 @@ object App extends FinatraServer {
         /**
          * Redirects
          *
-         * curl http://localhost:7070/redirect
+         * curl http://${server.url}/redirect
          */
         get("/redirect") { request =>
-            redirect("http://localhost:7070/", permanent = true).toFuture
+            redirect("/", permanent = true).toFuture
         }
 
         /**
          * Uploading files
          *
-         * curl -F avatar=@/path/to/img http://localhost:7070/profile
+         * curl -F avatar=@/path/to/img http://${server.url}/profile
          */
         post("/profile") { request =>
             request.multiParams.get("avatar").map { avatar =>
@@ -90,7 +90,7 @@ object App extends FinatraServer {
         /**
          * Rendering views
          *
-         * curl http://localhost:7070/template
+         * curl http://${server.url}/template
          */
         class AnView extends View {
             val template = "template/an_view.mustache"
@@ -106,7 +106,7 @@ object App extends FinatraServer {
         /**
          * Custom Error Handling
          *
-         * curl http://localhost:7070/error
+         * curl http://${server.url}/error
          */
         get("/error") { request =>
             1234 / 0
@@ -116,7 +116,7 @@ object App extends FinatraServer {
         /**
          * Custom Error Handling with custom Exception
          *
-         * curl http://localhost:7070/unauthorized
+         * curl http://${server.url}/unauthorized
          */
         class Unauthorized extends Exception
 
@@ -141,7 +141,7 @@ object App extends FinatraServer {
         /**
          * Custom 404s
          *
-         * curl http://localhost:7070/notfound
+         * curl http://${server.url}/notfound
          */
         notFound { request =>
             render.status(404).plain("not found yo").toFuture
@@ -150,7 +150,7 @@ object App extends FinatraServer {
         /**
          * Arbitrary Dispatch
          *
-         * curl http://localhost:7070/go_home
+         * curl http://${server.url}/go_home
          */
         get("/go_home") { request =>
             route.get("/")
@@ -171,8 +171,8 @@ object App extends FinatraServer {
         /**
          * Dispatch based on Content-Type
          *
-         * curl http://localhost:7070/blog/index.json
-         * curl http://localhost:7070/blog/index.html
+         * curl http://${server.url}/blog/index.json
+         * curl http://${server.url}/blog/index.html
          */
         get("/blog/index.:format") { request =>
             respondTo(request) {
@@ -184,9 +184,9 @@ object App extends FinatraServer {
         /**
          * Also works without :format route using browser Accept header
          *
-         * curl -H "Accept: text/html" http://localhost:7070/another/page
-         * curl -H "Accept: application/json" http://localhost:7070/another/page
-         * curl -H "Accept: foo/bar" http://localhost:7070/another/page
+         * curl -H "Accept: text/html" http://${server.url}/another/page
+         * curl -H "Accept: application/json" http://${server.url}/another/page
+         * curl -H "Accept: foo/bar" http://${server.url}/another/page
          */
 
         get("/another/page") { request =>
@@ -201,7 +201,7 @@ object App extends FinatraServer {
          * Metrics are supported out of the box via Twitter's Ostrich library.
          * More details here: https://github.com/twitter/ostrich
          *
-         * curl http://localhost:7070/slow_thing
+         * curl http://${server.url}/slow_thing
          *
          * By default a stats server is started on 9990:
          *
