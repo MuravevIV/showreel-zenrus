@@ -205,7 +205,7 @@ object App extends FinatraServer {
          *
          * By default a stats server is started on 9990:
          *
-         * curl http://localhost:9990/stats.txt
+         * curl http://${server.url}:9990/stats.txt
          *
          */
 
