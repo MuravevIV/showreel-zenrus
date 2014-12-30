@@ -3,6 +3,8 @@ Finatra Sample App on OpenShift
 
 Quickstart finatra application for openshift.
 
+Maven should be installed and configured, if not it can be downloaded from http://maven.apache.org/.
+
 Running on OpenShift
 --------------------
 
@@ -31,3 +33,18 @@ Then push the repo upstream
 That's it, you can now checkout your application at:
 
     http://finatra-$yournamespace.rhcloud.com
+
+Running locally
+--------------------
+
+On Windows
+
+    startup.bat
+
+On Linux
+
+    startup.sh
+
+That's it, you can now checkout your application at:
+
+    http://localhost:8080
