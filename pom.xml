@@ -4,9 +4,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.ilyamur</groupId>
-    <artifactId>finatra-openshift-quickstart</artifactId>
+    <artifactId>showreel-zenrus</artifactId>
     <version>1.0</version>
-    <name>finatra-openshift-quickstart</name>
+    <name>showreel-zenrus</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -57,7 +57,7 @@
 
     <build>
 
-        <finalName>finatra-openshift-quickstart</finalName>
+        <finalName>${project.name}</finalName>
 
         <sourceDirectory>src/main/scala</sourceDirectory>
         <testSourceDirectory>src/test/scala</testSourceDirectory>
@@ -78,7 +78,7 @@
                     <launchers>
                         <launcher>
                             <id>main</id>
-                            <mainClass>com.twitter.finatra_example.App</mainClass>
+                            <mainClass>com.ilyamur.showreel.zenrus.App</mainClass>
                         </launcher>
                     </launchers>
                 </configuration>
@@ -136,13 +136,13 @@
                 </executions>
             </plugin>
 
-            <!-- start Finatra server -->
+            <!-- start server -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>1.3.2</version>
                 <configuration>
-                    <mainClass>com.twitter.finatra_example.App</mainClass>
+                    <mainClass>com.ilyamur.showreel.zenrus.App</mainClass>
                     <systemProperties>
                         <systemProperty>
                             <key>com.twitter.finatra.config.port</key>

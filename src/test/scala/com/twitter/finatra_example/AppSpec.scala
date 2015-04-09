@@ -1,5 +1,6 @@
 package com.twitter.finatra_example
 
+import com.ilyamur.showreel.zenrus.App
 import com.twitter.finatra.test._
 import com.twitter.finatra.FinatraServer
 

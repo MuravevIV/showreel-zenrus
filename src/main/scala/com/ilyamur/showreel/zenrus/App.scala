@@ -1,7 +1,7 @@
-package com.twitter.finatra_example
+package com.ilyamur.showreel.zenrus
 
-import com.twitter.finatra._
 import com.twitter.finatra.ContentType._
+import com.twitter.finatra._
 
 object App extends FinatraServer {
 
