@@ -6,9 +6,15 @@
     <title>Zenrus</title>
     <link rel="stylesheet" type="text/css" href="/css/reset.css">
     <link rel="stylesheet" type="text/css" href="/components/bootstrap/dist/css/bootstrap.css">
+    <link rel="stylesheet" type="text/css" href="/css/chart/detail.css">
+    <link rel="stylesheet" type="text/css" href="/css/chart/graph.css">
+    <link rel="stylesheet" type="text/css" href="/css/chart/legend.css">
     <link rel="stylesheet" type="text/css" href="/css/style.css">
     <script src="/components/jquery/dist/jquery.min.js"></script>
+    <script src="/components/jquery-ui/jquery-ui.min.js"></script>
     <script src="/components/rxjs/dist/rx.all.min.js"></script>
+    <script src="/components/d3/d3.min.js"></script>
+    <script src="/components/rickshaw/rickshaw.min.js"></script>
     <script src="/js/app.js"></script>
 </head>
 <body>
@@ -25,11 +31,118 @@
     <div class="pan-out">
         <div class="pan-mid">
             <div class="pan-in">
-                <div id="EURRUB"  class="value">00.0000</div>
+                <div id="EURRUB" class="value">00.0000</div>
                 <div class="type">EUR/RUB</div>
             </div>
         </div>
     </div>
+</div>
+
+<div id="content">
+
+    <form id="side_panel">
+        <h1>Random Data in the Future</h1>
+        <section>
+            <div id="legend" class="rickshaw_legend" style="height: 123px;">
+                <ul class="ui-sortable">
+                    <li class="line"><a class="action">✔</a>
+
+                        <div class="swatch" style="background-color: rgb(221, 203, 83);"></div>
+                        <span class="label">New York</span></li>
+                    <li class="line"><a class="action">✔</a>
+
+                        <div class="swatch" style="background-color: rgb(197, 163, 47);"></div>
+                        <span class="label">London</span></li>
+                    <li class="line"><a class="action">✔</a>
+
+                        <div class="swatch" style="background-color: rgb(125, 88, 54);"></div>
+                        <span class="label">Tokyo</span></li>
+                    <li class="line"><a class="action">✔</a>
+
+                        <div class="swatch" style="background-color: rgb(150, 59, 32);"></div>
+                        <span class="label">Paris</span></li>
+                    <li class="line"><a class="action">✔</a>
+
+                        <div class="swatch" style="background-color: rgb(124, 38, 38);"></div>
+                        <span class="label">Amsterdam</span></li>
+                    <li class="line"><a class="action">✔</a>
+
+                        <div class="swatch" style="background-color: rgb(73, 29, 55);"></div>
+                        <span class="label">Shanghai</span></li>
+                    <li class="line"><a class="action">✔</a>
+
+                        <div class="swatch" style="background-color: rgb(47, 37, 74);"></div>
+                        <span class="label">Moscow</span></li>
+                </ul>
+            </div>
+        </section>
+        <section>
+            <div id="renderer_form" class="toggler">
+                <input type="radio" name="renderer" id="area" value="area" checked="">
+                <label for="area">area</label>
+                <input type="radio" name="renderer" id="bar" value="bar">
+                <label for="bar">bar</label>
+                <input type="radio" name="renderer" id="line" value="line">
+                <label for="line">line</label>
+                <input type="radio" name="renderer" id="scatter" value="scatterplot">
+                <label for="scatter">scatter</label>
+            </div>
+        </section>
+        <section>
+            <div id="offset_form">
+                <label for="stack">
+                    <input type="radio" name="offset" id="stack" value="zero" checked="">
+                    <span>stack</span>
+                </label>
+                <label for="stream">
+                    <input type="radio" name="offset" id="stream" value="wiggle">
+                    <span>stream</span>
+                </label>
+                <label for="pct">
+                    <input type="radio" name="offset" id="pct" value="expand">
+                    <span>pct</span>
+                </label>
+                <label for="value">
+                    <input type="radio" name="offset" id="value" value="value">
+                    <span>value</span>
+                </label>
+            </div>
+            <div id="interpolation_form">
+                <label for="cardinal">
+                    <input type="radio" name="interpolation" id="cardinal" value="cardinal" checked="">
+                    <span>cardinal</span>
+                </label>
+                <label for="linear">
+                    <input type="radio" name="interpolation" id="linear" value="linear">
+                    <span>linear</span>
+                </label>
+                <label for="step">
+                    <input type="radio" name="interpolation" id="step" value="step-after">
+                    <span>step</span>
+                </label>
+            </div>
+        </section>
+        <section>
+            <h6>Smoothing</h6>
+
+            <div id="smoother" class="ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all"><a
+                    class="ui-slider-handle ui-state-default ui-corner-all" href="#" style="left: 0%;"></a></div>
+        </section>
+        <section></section>
+    </form>
+
+    <div id="chart_container">
+        <div id="chart" class="rickshaw_graph">
+
+        </div>
+        <div id="timeline" class="rickshaw_annotation_timeline">
+
+        </div>
+        <div id="preview" class="ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all" style="width: 900px;">
+
+        </div>
+    </div>
+
 </div>
 
 </body>
