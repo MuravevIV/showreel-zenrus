@@ -6,22 +6,30 @@ $(document).ready(function () {
         return Rx.Observable.timer(0, POLL_PERIOD);
     };
 
-    var pollRates = function () {
+    var pollRatesString = function () {
         return $.ajax({
             url: '/api/rates',
             dataType: 'text'
         }).promise();
     };
 
-    var applyUIChange = function (ratesString) {
+    var decodeRatesString = function (ratesString) {
+        return _.chain(ratesString.split(';'))
+            .map(function (item) {
+                return item.split(':');
+            })
+            .map(function (pair) {
+                return {
+                    key: pair[0],
+                    value: pair[1]
+                };
+            })
+            .value();
+    };
 
-        var setUIValue = function (key, value) {
-            $('#' + key).text(value);
-        };
-
-        ratesString.split(';').forEach(function (item) {
-            var pair = item.split(':');
-            setUIValue(pair[0], pair[1]);
+    var applyUIChange = function (rates) {
+        _.each(rates, function (rate) {
+            $('#' + rate.key).text(rate.value);
         });
     };
 
@@ -38,7 +46,8 @@ $(document).ready(function () {
 
     // main event chain:
     firePeriodically()
-        .flatMapLatest(pollRates)
+        .flatMapLatest(pollRatesString)
+        .map(decodeRatesString)
         .subscribe(applyUIChange);
 });
 
