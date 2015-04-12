@@ -25,15 +25,24 @@ $(document).ready(function () {
         });
     };
 
+    var buildCharts = function () {
+        _.each($('.rate_chart'), function (rate_chart) {
+            var $rate_chart = $(rate_chart);
+            var chart = $rate_chart.find('.rickshaw_graph')[0];
+            var legend = $rate_chart.find('.rickshaw_legend')[0];
+            rickshaw(chart, legend)
+        });
+    };
+
+    buildCharts();
+
     // main event chain:
     firePeriodically()
         .flatMapLatest(pollRates)
         .subscribe(applyUIChange);
-
-    rickshaw();
 });
 
-var rickshaw = function () {
+var rickshaw = function (chart, legend) {
 
     var seriesData = [[]];
 
@@ -43,7 +52,7 @@ var rickshaw = function () {
     }
 
     var graph = new Rickshaw.Graph({
-        element: document.getElementById("chart"),
+        element: chart,
         width: 260,
         height: 100,
         renderer: 'line',
@@ -67,9 +76,9 @@ var rickshaw = function () {
         }
     });
 
-    var legend = new Rickshaw.Graph.Legend({
+    new Rickshaw.Graph.Legend({
         graph: graph,
-        element: document.getElementById('legend')
+        element: legend
     });
 
     var ticksTreatment = 'glow';
