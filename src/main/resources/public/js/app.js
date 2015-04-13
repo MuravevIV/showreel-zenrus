@@ -29,7 +29,7 @@ $(document).ready(function () {
 
     var applyUIChange = function (rates) {
         _.each(rates, function (rate) {
-            $('#' + rate.key).text(rate.value);
+            $('#' + rate.key).find('.value').text(rate.value);
         });
     };
 
