@@ -103,7 +103,7 @@ var D3Graph = function (selector) {
     var baseWidth = 260;
     var baseHeight = 140;
 
-    var margin = {top: 20, right: 30, bottom: 20, left: 30};
+    var margin = {top: 20, right: 50, bottom: 20, left: 50};
 
     var width = baseWidth - margin.left - margin.right;
     var height = baseHeight - margin.top - margin.bottom;
@@ -121,16 +121,18 @@ var D3Graph = function (selector) {
 
     var dataset = [];
 
-    var m = 720;
+    var maxDatasetSize = 12;
+    /*
     for (var i = 0; i < m; i++) {
         dataset.push({
             t: d3.time.second.offset(now, -5 * (m - i)),
             v: 45 + (Math.random() * 10)
         });
     }
+    */
 
     var xScale = d3.time.scale()
-        .domain([d3.time.hour.offset(now, -1), now])
+        .domain([d3.time.minute.offset(now, -1), now])
         .range([0, width]);
 
     var goldenRatio = 1.6180;
@@ -194,7 +196,7 @@ var D3Graph = function (selector) {
 
         var now = new Date();
 
-        xScale.domain([d3.time.hour.offset(now, -1), now]);
+        xScale.domain([d3.time.minute.offset(now, -1), now]);
 
         var goldenRatio = 1.6180;
         var yMin = _.min(dataset, function (d) { return d.v; }).v;
@@ -231,7 +233,9 @@ var D3Graph = function (selector) {
             t: now,
             v: newValue
         });
-        dataset.shift();
+        if (dataset.length > maxDatasetSize) {
+            dataset.shift();
+        }
         redraw();
     };
 };
