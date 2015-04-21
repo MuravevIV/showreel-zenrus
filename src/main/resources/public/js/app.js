@@ -21,7 +21,7 @@ $(document).ready(function () {
             .map(function (pair) {
                 return {
                     key: pair[0],
-                    value: pair[1]
+                    value: parseFloat(pair[1])
                 };
             })
             .value();
@@ -29,7 +29,8 @@ $(document).ready(function () {
 
     var applyUIChange = function (rates) {
         _.each(rates, function (rate) {
-            $('#' + rate.key).find('.value').text(rate.value);
+            var strRateValue = rate.value.toFixed(4);
+            $('#' + rate.key).find('.value').text(strRateValue);
         });
     };
 
@@ -51,8 +52,7 @@ $(document).ready(function () {
         _.each(plots, function (plot) {
             _.each(rates, function (rate) {
                 if (plot.id == rate.key) {
-                    var floatValue = parseFloat(rate.value);
-                    plot.graph.continueData(floatValue);
+                    plot.graph.continueData(rate.value);
                 }
             });
         });
@@ -90,8 +90,7 @@ $(document).ready(function () {
             _.each(graphs, function (graph) {
                 _.each(rates, function (rate) {
                     if (graph.id == rate.key) {
-                        var floatValue = parseFloat(rate.value);
-                        graph.graph.push(floatValue);
+                        graph.graph.push(rate.value);
                     }
                 });
             });
