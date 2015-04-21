@@ -3,6 +3,12 @@ html, body {
 	height: 100%;
 }
 
+body{
+	min-width: 1000px;
+	width: auto !important;
+	width: 1000px;
+}
+
 .main {
 	height: 100%;
 	display: flex;
