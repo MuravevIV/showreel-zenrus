@@ -165,6 +165,14 @@ var D3Graph = function (selector) {
 
     //
 
+    svg.append("clipPath")
+        .attr("id", "graph-area")
+        .append("rect")
+        .attr("x", 0)
+        .attr("y", 0)
+        .attr("width", width)
+        .attr("height", height);
+
     var lineFunction = d3.svg.line()
         .x(function (d, i) {
             return xScale(d.t);
@@ -175,6 +183,7 @@ var D3Graph = function (selector) {
         .interpolate("linear");
 
     svg.append("path")
+        .attr("clip-path", "url(#graph-area)")
         .attr("class", "line")
         .attr("stroke", "blue")
         .attr("stroke-width", 2)
@@ -222,6 +231,7 @@ var D3Graph = function (selector) {
             t: now,
             v: newValue
         });
+        dataset.shift();
         redraw();
     };
 };
