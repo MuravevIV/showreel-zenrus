@@ -38,7 +38,6 @@ $(document).ready(function () {
             var $rate_chart = $(rate_chart);
             var chart = $rate_chart.find('.rickshaw_graph')[0];
             var legend = $rate_chart.find('.rickshaw_legend')[0];
-            rickshaw(chart, legend)
         });
     };
 
@@ -50,65 +49,3 @@ $(document).ready(function () {
         .map(decodeRatesString)
         .subscribe(applyUIChange);
 });
-
-var rickshaw = function (chart, legend) {
-
-    var seriesData = [[]];
-
-    var random = new Rickshaw.Fixtures.RandomData(150);
-    for (var i = 0; i < 150; i++) {
-        random.addData(seriesData);
-    }
-
-    var graph = new Rickshaw.Graph({
-        element: chart,
-        width: 260,
-        height: 100,
-        renderer: 'line',
-        stroke: true,
-        preserve: true,
-        series: [
-            {
-                color: 'black',
-                data: seriesData[0],
-                name: 'USDRUB'
-            }
-        ]
-    });
-
-    graph.render();
-
-    new Rickshaw.Graph.HoverDetail({
-        graph: graph,
-        xFormatter: function (x) {
-            return new Date(x * 1000).toString();
-        }
-    });
-
-    new Rickshaw.Graph.Legend({
-        graph: graph,
-        element: legend
-    });
-
-    var ticksTreatment = 'glow';
-
-    var xAxis = new Rickshaw.Graph.Axis.Time({
-        graph: graph,
-        ticksTreatment: ticksTreatment,
-        timeFixture: new Rickshaw.Fixtures.Time.Local()
-    });
-    xAxis.render();
-
-    var yAxis = new Rickshaw.Graph.Axis.Y({
-        graph: graph,
-        tickFormat: Rickshaw.Fixtures.Number.formatKMBT,
-        ticksTreatment: ticksTreatment
-    });
-    yAxis.render();
-
-    setInterval(function () {
-        random.removeData(seriesData);
-        random.addData(seriesData);
-        graph.update();
-    }, 5000);
-};
