@@ -99,10 +99,10 @@ $(document).ready(function () {
 
 var D3Graph = function (selector) {
 
-    var baseWidth = 260;
+    var baseWidth = 300;
     var baseHeight = 140;
 
-    var margin = {top: 20, right: 20, bottom: 20, left: 50};
+    var margin = {top: 0, right: 15, bottom: 20, left: 50};
 
     var width = baseWidth - margin.left - margin.right;
     var height = baseHeight - margin.top - margin.bottom;
