@@ -123,9 +123,19 @@ var D3Graph = function (selector) {
     var maxDatasetSize = 15;
 
     var getYDomain = function (dataset) {
+        if (dataset.length == 0) {
+            return {
+                min: 0,
+                max: 100
+            };
+        }
         var goldenRatio = 1.6180;
         var dataMin = _.min(dataset, function (d) { return d.v; }).v;
         var dataMax = _.max(dataset, function (d) { return d.v; }).v;
+        if (dataMin == dataMax) {
+            dataMin -= 1;
+            dataMax += 1;
+        }
         var dataHeight = dataMax - dataMin;
         var fullHeight = dataHeight * goldenRatio;
         var padding = (fullHeight - dataHeight) / 2;
