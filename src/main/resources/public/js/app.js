@@ -121,27 +121,30 @@ var D3Graph = function (selector) {
     var dataset = [];
 
     var maxDatasetSize = 15;
-    /*
-    for (var i = 0; i < m; i++) {
-        dataset.push({
-            t: d3.time.second.offset(now, -5 * (m - i)),
-            v: 45 + (Math.random() * 10)
-        });
-    }
-    */
+
+    var getYDomain = function (dataset) {
+        var goldenRatio = 1.6180;
+        var dataMin = _.min(dataset, function (d) { return d.v; }).v;
+        var dataMax = _.max(dataset, function (d) { return d.v; }).v;
+        var dataHeight = dataMax - dataMin;
+        var fullHeight = dataHeight * goldenRatio;
+        var padding = (fullHeight - dataHeight) / 2;
+        return {
+            min: dataMin - padding,
+            max: dataMax + padding
+        };
+    };
+
+    //
 
     var xScale = d3.time.scale()
         .domain([d3.time.minute.offset(now, -1), now])
         .range([0, width]);
 
-    var goldenRatio = 1.6180;
-    var yMin = _.min(dataset, function (d) { return d.v; }).v;
-    var yMax = _.max(dataset, function (d) { return d.v; }).v;
-    var yDomainHeight = yMax - yMin;
-    var yFullHeight = yDomainHeight * goldenRatio;
-    var yPadding = (yFullHeight - yDomainHeight) / 2;
+    var yDomain = getYDomain(dataset);
+
     var yScale = d3.scale.linear()
-        .domain([yMin - yPadding, yMax + yPadding])
+        .domain([yDomain.min, yDomain.max])
         .range([height, 0]);
 
     var xAxis = d3.svg.axis()
@@ -197,13 +200,8 @@ var D3Graph = function (selector) {
 
         xScale.domain([d3.time.minute.offset(now, -1), now]);
 
-        var goldenRatio = 1.6180;
-        var yMin = _.min(dataset, function (d) { return d.v; }).v;
-        var yMax = _.max(dataset, function (d) { return d.v; }).v;
-        var yDomainHeight = yMax - yMin;
-        var yFullHeight = yDomainHeight * goldenRatio;
-        var yPadding = (yFullHeight - yDomainHeight) / 2;
-        yScale.domain([yMin - yPadding, yMax + yPadding]);
+        var yDomain = getYDomain(dataset);
+        yScale.domain([yDomain.min, yDomain.max]);
 
         var lineFunction = d3.svg.line()
             .x(function (d, i) {
