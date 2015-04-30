@@ -39,6 +39,16 @@
 
     </profiles>
 
+    <repositories>
+
+        <repository>
+            <id>com.github.sprsquish</id>
+            <url>https://raw.github.com/sprsquish/mvn-repo/master/</url>
+            <layout>default</layout>
+        </repository>
+
+    </repositories>
+
     <dependencies>
 
         <dependency>
@@ -85,8 +95,20 @@
 
         <dependency>
             <groupId>io.reactivex</groupId>
-            <artifactId>rxjava</artifactId>
-            <version>1.0.7</version>
+            <artifactId>rxscala_2.10</artifactId>
+            <version>0.24.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.sprsquish</groupId>
+            <artifactId>finagle-websockets_2.10</artifactId>
+            <version>6.8.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.twitter</groupId>
+            <artifactId>finagle-core_2.10</artifactId>
+            <version>6.17.0</version>
         </dependency>
 
     </dependencies>
