@@ -18,5 +18,8 @@ object Server extends FinatraServer with Macwire {
     lazy val futurePool = FuturePool(executionService)
     lazy val appController = wire[AppController]
 
+    val websocketServer = wire[WebsocketServer]
+    val websocketClient = wire[WebsocketClient]
+
     register(appController)
 }

@@ -7,9 +7,14 @@ class WebsocketClient {
 
     private val broker = new Broker[String]
     private val offer = broker.recv
-    HttpWebSocket.open(offer, "ws://localhost:8080/") onSuccess { webSocket =>
+    HttpWebSocket.open(offer, "ws://localhost:8888/") onSuccess { webSocket =>
         webSocket.messages.foreach { message =>
-            println(message)
+            //
+            if (message == "ping") {
+                println("client: server send ping")
+                broker ! "pong"
+            }
+            //
         }
     }
 }

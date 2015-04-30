@@ -8,14 +8,24 @@ import com.twitter.util.Future
 class WebsocketServer {
 
     HttpWebSocket.serve(":8888", new Service[WebSocket, WebSocket] {
-        def apply(req: WebSocket): Future[WebSocket] = {
+        def apply(reqWebSocket: WebSocket): Future[WebSocket] = {
             val broker = new Broker[String]
             val offer = broker.recv
-            val webSocket = req.copy(messages = offer)
-            req.messages.foreach {
-                broker ! _.reverse
+            val respWebSocket = reqWebSocket.copy(messages = offer)
+            reqWebSocket.messages.foreach { message =>
+                if (message == "pong") {
+                    println("server: client answered pong")
+                }
             }
-            Future.value(webSocket)
+            //
+            println("server: sending ping to client")
+            broker ! "ping"
+            //
+            Future.value(respWebSocket)
         }
     })
+
+    def handler(message: String): String = {
+        message.reverse
+    }
 }
