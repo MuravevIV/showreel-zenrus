@@ -60,7 +60,7 @@
         <dependency>
             <groupId>com.twitter</groupId>
             <artifactId>finatra_2.10</artifactId>
-            <version>1.5.4</version>
+            <version>1.5.2</version>
         </dependency>
 
         <dependency>
@@ -108,7 +108,7 @@
         <dependency>
             <groupId>com.twitter</groupId>
             <artifactId>finagle-core_2.10</artifactId>
-            <version>6.17.0</version>
+            <version>6.11.1</version>
         </dependency>
 
     </dependencies>
