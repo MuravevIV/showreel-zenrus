@@ -4,6 +4,7 @@ import java.util.concurrent.Executors
 
 import com.ilyamur.bixbite.finance.yahoo.YahooFinance
 import com.ilyamur.bixbite.http.simple.HttpExecutorSimple
+import com.ilyamur.finagle.websocket.{HttpWebsocketServer, HttpWebsocketClient}
 import com.ilyamur.showreel.zenrus.http.HttpConnectionManagerZenrus
 import com.softwaremill.macwire.Macwire
 import com.twitter.finatra._
@@ -18,8 +19,8 @@ object Server extends FinatraServer with Macwire {
     lazy val futurePool = FuturePool(executionService)
     lazy val appController = wire[AppController]
 
-    val websocketServer = wire[WebsocketServer]
-    val websocketClient = wire[WebsocketClient]
+    val websocketServer = new AppWebsocketServer(":8888")
+    val websocketClient = new AppWebsocketClient("ws://localhost:8888")
 
     register(appController)
 }
