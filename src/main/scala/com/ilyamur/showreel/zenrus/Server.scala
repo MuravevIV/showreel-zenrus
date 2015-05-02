@@ -20,7 +20,11 @@ object Server extends FinatraServer with Macwire {
     lazy val appController = wire[AppController]
 
     val websocketServer = new AppWebsocketServer(":8888")
-    val websocketClient = new AppWebsocketClient("ws://localhost:8888")
+    // val websocketClient = new AppWebsocketClient("ws://localhost:8888")
 
     register(appController)
+
+    Thread.sleep(2000)
+
+    // websocketServer.close()
 }
