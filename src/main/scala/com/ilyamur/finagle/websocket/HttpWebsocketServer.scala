@@ -27,11 +27,17 @@ abstract class HttpWebsocketServer[C](addr: String) {
 
     def createClient(broker: Broker[String]): C
     
-    def onopen(client: C)
+    def onopen(client: C): Unit = {
+        // nop
+    }
 
-    def onmessage(client: C, message: String)
+    def onmessage(client: C, message: String): Unit = {
+        // nop
+    }
 
-    def onclose(client: C)
+    def onclose(client: C): Unit = {
+        // nop
+    }
 
     def close(deadline: Time): Future[Unit] = {
         listeningServer.close(deadline)

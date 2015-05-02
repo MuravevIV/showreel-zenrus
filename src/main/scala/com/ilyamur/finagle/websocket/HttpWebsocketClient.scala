@@ -26,11 +26,17 @@ abstract class HttpWebsocketClient(addr: String) {
         broker ! message
     }
 
-    def onopen(): Unit
+    def onopen(): Unit = {
+        // nop
+    }
 
-    def onmessage(message: String): Unit
+    def onmessage(message: String): Unit = {
+        // nop
+    }
 
-    def onclose(): Unit
+    def onclose(): Unit = {
+        // nop
+    }
 
     def close(): Unit = {
         futWebSocket.onSuccess { webSocket =>
