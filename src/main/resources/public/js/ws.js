@@ -1,24 +1,25 @@
 $(document).ready(function () {
 
-    var socket = new WebSocket("ws://localhost:8888");
+    var rxSocket = Rx.DOM.fromWebSocket('ws://localhost:8888', null,
+        Rx.Observer.create(function (e) {
+            console.log("client: opened");
+        }),
+        Rx.Observer.create(function (e) {
+            console.log("client: closed");
+        })
+    );
 
-    socket.onopen = function () {
-        console.log("client: opened");
-        // socket.send("init");
-    };
-
-    socket.onmessage = function (message) {
-        if (message.data == "ping") {
-            console.log("client: received ping, sending pong");
-            socket.send("pong");
+    rxSocket.subscribe(function (e) {
+            if (e.data == "ping") {
+                console.log("client: received ping, sending pong");
+                rxSocket.onNext("pong");
+            }
+        },
+        function (e) {
+            console.error('client: error', e);
+        },
+        function (e) {
+            console.info('client: closed');
         }
-    };
-
-    socket.onclose = function () {
-        console.log("client: closed");
-    };
-
-    socket.onerror = function (e) {
-        console.log("client: error", e);
-    };
+    );
 });
