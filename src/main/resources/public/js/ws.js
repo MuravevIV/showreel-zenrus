@@ -17,4 +17,8 @@ $(document).ready(function () {
     socket.onclose = function () {
         console.log("client: closed");
     };
+
+    socket.onerror = function (e) {
+        console.log("client: error", e);
+    };
 });
