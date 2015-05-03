@@ -27,6 +27,9 @@
             <id>openshift</id>
             <properties>
                 <server.ip>${env.OPENSHIFT_DIY_IP}</server.ip>
+                <server.port>${env.OPENSHIFT_DIY_PORT}</server.port>
+                <admin.port>9990</admin.port>
+                <websocket.port>${server.port}</websocket.port>
             </properties>
         </profile>
 
@@ -34,6 +37,9 @@
             <id>local</id>
             <properties>
                 <server.ip>127.0.0.1</server.ip>
+                <server.port>8080</server.port>
+                <admin.port>9990</admin.port>
+                <websocket.port>8000</websocket.port>
             </properties>
         </profile>
 
@@ -204,15 +210,19 @@
                     <systemProperties>
                         <systemProperty>
                             <key>com.twitter.finatra.config.port</key>
-                            <value>${server.ip}:8080</value>
+                            <value>${server.ip}:${server.port}</value>
                         </systemProperty>
                         <systemProperty>
                             <key>com.twitter.finatra.config.adminPort</key>
-                            <value>${server.ip}:9990</value>
+                            <value>${server.ip}:${admin.port}</value>
                         </systemProperty>
                         <systemProperty>
                             <key>com.twitter.finatra.config.logPath</key>
                             <value></value>
+                        </systemProperty>
+                        <systemProperty>
+                            <key>websocket.port</key>
+                            <value>${websocket.port}</value>
                         </systemProperty>
                     </systemProperties>
                 </configuration>

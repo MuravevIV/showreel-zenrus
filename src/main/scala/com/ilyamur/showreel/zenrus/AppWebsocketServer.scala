@@ -4,7 +4,8 @@ import com.ilyamur.finagle.websocket.HttpWebsocketServer
 import com.twitter.concurrent.Broker
 import org.slf4j.LoggerFactory
 
-class AppWebsocketServer(ratesPoller: RatesPoller) extends HttpWebsocketServer[AppWebsocketServerClient](":8888") {
+class AppWebsocketServer(ratesPoller: RatesPoller)
+        extends HttpWebsocketServer[AppWebsocketServerClient](":" + System.getProperty("websocket.port")) {
 
     private val log = LoggerFactory.getLogger(getClass)
 
@@ -12,7 +13,7 @@ class AppWebsocketServer(ratesPoller: RatesPoller) extends HttpWebsocketServer[A
         "USD" -> "RUB",
         "EUR" -> "RUB"
     ))
-    
+
     override def createClient(broker: Broker[String]): AppWebsocketServerClient = {
         new AppWebsocketServerClient(broker)
     }
