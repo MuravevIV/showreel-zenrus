@@ -12,6 +12,10 @@ class AppController(yahooFinance: YahooFinance, futurePool: FuturePool) extends 
         render.static("index.html").toFuture
     }
 
+    get("/ws") { request =>
+        render.static("ws.html").toFuture
+    }
+
     get("/api/rates") { request =>
         futurePool {
             val ratesString = yahooFinance
