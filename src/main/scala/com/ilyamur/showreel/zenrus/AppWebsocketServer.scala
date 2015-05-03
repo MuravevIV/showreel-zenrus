@@ -9,7 +9,7 @@ class AppWebsocketServer(ratesPoller: RatesPoller)
 
     private val log = LoggerFactory.getLogger(getClass)
 
-    log.info("initialized")
+    log.trace("initialized")
 
     val rxRates = ratesPoller.poll(Map(
         "USD" -> "RUB",

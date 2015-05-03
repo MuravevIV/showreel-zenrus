@@ -27,5 +27,5 @@ object Server extends FinatraServer with Macwire {
 
     register(appController)
 
-    _log.info("initialized")
+    _log.trace("initialized")
 }
