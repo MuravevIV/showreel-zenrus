@@ -9,8 +9,11 @@ import com.ilyamur.showreel.zenrus.http.HttpConnectionManagerZenrus
 import com.softwaremill.macwire.Macwire
 import com.twitter.finatra._
 import com.twitter.util.FuturePool
+import org.slf4j.LoggerFactory
 
 object Server extends FinatraServer with Macwire {
+
+    private val _log = LoggerFactory.getLogger(getClass)
 
     lazy val httpConnectionManager = wire[HttpConnectionManagerZenrus]
     lazy val httpExecutorSimple = wire[HttpExecutorSimple]
@@ -24,5 +27,5 @@ object Server extends FinatraServer with Macwire {
 
     register(appController)
 
-    Thread.sleep(2000)
+    _log.info("initialized")
 }

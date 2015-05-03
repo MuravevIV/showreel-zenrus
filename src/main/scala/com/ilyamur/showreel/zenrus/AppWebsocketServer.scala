@@ -9,6 +9,8 @@ class AppWebsocketServer(ratesPoller: RatesPoller)
 
     private val log = LoggerFactory.getLogger(getClass)
 
+    log.info("initialized")
+
     val rxRates = ratesPoller.poll(Map(
         "USD" -> "RUB",
         "EUR" -> "RUB"
@@ -21,6 +23,7 @@ class AppWebsocketServer(ratesPoller: RatesPoller)
     override def onopen(client: AppWebsocketServerClient) {
         log.trace(s"$client opened")
         val subscription = rxRates.subscribe { rates =>
+            log.trace(s"$client sending: $rates")
             client.send(rates)
         }
         client.bindSubscription(subscription)
