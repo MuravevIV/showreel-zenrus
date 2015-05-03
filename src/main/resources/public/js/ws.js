@@ -2,24 +2,21 @@ $(document).ready(function () {
 
     var rxSocket = Rx.DOM.fromWebSocket('ws://localhost:8888', null,
         Rx.Observer.create(function (e) {
-            console.log("client: opened");
+            console.log('opened');
         }),
         Rx.Observer.create(function (e) {
-            console.log("client: closed");
+            console.log('closed');
         })
     );
 
     rxSocket.subscribe(function (e) {
-            if (e.data == "ping") {
-                console.log("client: received ping, sending pong");
-                rxSocket.onNext("pong");
-            }
+            console.log('received: ' + e.data);
         },
         function (e) {
-            console.error('client: error', e);
+            console.error('error', e);
         },
         function (e) {
-            console.info('client: closed');
+            console.log('closed');
         }
     );
 });

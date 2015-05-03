@@ -2,25 +2,35 @@ package com.ilyamur.showreel.zenrus
 
 import com.ilyamur.finagle.websocket.HttpWebsocketServer
 import com.twitter.concurrent.Broker
+import org.slf4j.LoggerFactory
 
-class AppWebsocketServer(addr: String) extends HttpWebsocketServer[AppWebsocketServerClient](addr: String) {
+class AppWebsocketServer(ratesPoller: RatesPoller) extends HttpWebsocketServer[AppWebsocketServerClient](":8888") {
 
+    private val log = LoggerFactory.getLogger(getClass)
+
+    val rxRates = ratesPoller.poll(Map(
+        "USD" -> "RUB",
+        "EUR" -> "RUB"
+    ))
+    
     override def createClient(broker: Broker[String]): AppWebsocketServerClient = {
         new AppWebsocketServerClient(broker)
     }
 
     override def onopen(client: AppWebsocketServerClient) {
-        println("server: opened, sending ping")
-        client.send("ping")
+        log.trace(s"$client opened")
+        val subscription = rxRates.subscribe { rates =>
+            client.send(rates)
+        }
+        client.bindSubscription(subscription)
     }
 
     override def onmessage(client: AppWebsocketServerClient, message: String) {
-        if (message == "pong") {
-            println("server: received pong")
-        }
+        log.trace(s"$client received: $message")
     }
 
     override def onclose(client: AppWebsocketServerClient)  {
-        println("server: closed")
+        log.trace(s"$client closed")
+        client.close()
     }
 }
