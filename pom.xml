@@ -221,8 +221,8 @@
                             <value></value>
                         </systemProperty>
                         <systemProperty>
-                            <key>websocket.port</key>
-                            <value>${websocket.port}</value>
+                            <key>com.twitter.finatra.config.websocketPort</key>
+                            <value>${server.ip}:${websocket.port}</value>
                         </systemProperty>
                     </systemProperties>
                 </configuration>

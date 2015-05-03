@@ -5,7 +5,7 @@ import com.twitter.concurrent.Broker
 import org.slf4j.LoggerFactory
 
 class AppWebsocketServer(ratesPoller: RatesPoller)
-        extends HttpWebsocketServer[AppWebsocketServerClient](":" + System.getProperty("websocket.port")) {
+        extends HttpWebsocketServer[AppWebsocketServerClient](System.getProperty("com.twitter.finatra.config.websocketPort")) {
 
     private val log = LoggerFactory.getLogger(getClass)
 

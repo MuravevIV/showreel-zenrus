@@ -1,6 +1,6 @@
 $(document).ready(function () {
 
-    var rxSocket = Rx.DOM.fromWebSocket('ws://localhost:8000', null,
+    var rxSocket = Rx.DOM.fromWebSocket('ws://' + window.location.hostname + ':8000', null,
         Rx.Observer.create(function (e) {
             console.log('opened');
         }),
