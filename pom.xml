@@ -30,6 +30,7 @@
                 <server.port>${env.OPENSHIFT_DIY_PORT}</server.port>
                 <admin.port>9990</admin.port>
                 <websocket.port>8000</websocket.port>
+                <log.dir>${env.OPENSHIFT_LOG_DIR}</log.dir>
             </properties>
         </profile>
 
@@ -40,6 +41,7 @@
                 <server.port>8080</server.port>
                 <admin.port>9990</admin.port>
                 <websocket.port>8000</websocket.port>
+                <log.dir>${project.basedir}/logs</log.dir>
             </properties>
         </profile>
 
@@ -223,6 +225,10 @@
                         <systemProperty>
                             <key>com.twitter.finatra.config.websocketPort</key>
                             <value>${server.ip}:${websocket.port}</value>
+                        </systemProperty>
+                        <systemProperty>
+                            <key>log.dir</key>
+                            <value>${log.dir}</value>
                         </systemProperty>
                     </systemProperties>
                 </configuration>
