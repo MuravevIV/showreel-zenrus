@@ -1,80 +1,6 @@
 $(document).ready(function () {
 
-    var POLL_PERIOD = 5000;
-
-    var firePeriodically = function () {
-        return Rx.Observable.timer(0, POLL_PERIOD);
-    };
-
-    var pollRatesString = function () {
-        return $.ajax({
-            url: '/api/rates',
-            dataType: 'text'
-        }).promise();
-    };
-
-    var decodeRatesString = function (ratesString) {
-        return _.chain(ratesString.split(';'))
-            .map(function (item) {
-                return item.split(':');
-            })
-            .map(function (pair) {
-                return {
-                    key: pair[0],
-                    value: parseFloat(pair[1])
-                };
-            })
-            .value();
-    };
-
-    var applyUIChange = function (rates) {
-        _.each(rates, function (rate) {
-            var strRateValue = rate.value.toFixed(4);
-            $('#' + rate.key).find('.value').text(strRateValue);
-        });
-    };
-
-    var buildPlots = function () {
-        var plots = _.map($('.rate_chart'), function (rate_chart) {
-            var $rate_chart = $(rate_chart);
-            var id = $rate_chart.attr('id');
-            var chart = $rate_chart.find('.rickshaw_graph')[0];
-            var legend = $rate_chart.find('.rickshaw_legend')[0];
-            return {
-                id: id,
-                graph: new Graph(chart, legend)
-            };
-        });
-        return Rx.Observable.just(plots);
-    };
-
-    var updatePlotRates = function (plots, rates) {
-        _.each(plots, function (plot) {
-            _.each(rates, function (rate) {
-                if (plot.id == rate.key) {
-                    plot.graph.continueData(rate.value);
-                }
-            });
-        });
-    };
-
-    var obsRates = firePeriodically()
-        .flatMapLatest(pollRatesString)
-        .map(decodeRatesString);
-
-    obsRates
-        .subscribe(applyUIChange);
-
-    /*
-     buildPlots()
-     .subscribe(function (plots) {
-     obsRates.subscribe(function (rates) {
-     updatePlotRates(plots, rates);
-     });
-     });
-     */
-
-    var graphs = [
+    var GRAPHS = [
         {
             id: "USDRUB",
             graph: new D3Graph('#USDRUB')
@@ -85,40 +11,64 @@ $(document).ready(function () {
         }
     ];
 
-    obsRates
-        .subscribe(function (rates) {
-            _.each(graphs, function (graph) {
-                _.each(rates, function (rate) {
-                    if (graph.id == rate.key) {
-                        graph.graph.push(rate.value);
-                    }
-                });
+    var getObsRates = function () {
+
+        var POLL_PERIOD = 5000;
+
+        var firePeriodically = function () {
+            return Rx.Observable.timer(0, POLL_PERIOD);
+        };
+
+        var pollRatesString = function () {
+            return $.ajax({
+                url: '/api/rates',
+                dataType: 'text'
+            }).promise();
+        };
+
+        var decodeRatesString = function (ratesString) {
+            return _.chain(ratesString.split(';'))
+                .map(function (item) {
+                    return item.split(':');
+                })
+                .map(function (pair) {
+                    return {
+                        key: pair[0],
+                        value: parseFloat(pair[1])
+                    };
+                })
+                .value();
+        };
+
+        return firePeriodically()
+            .flatMapLatest(pollRatesString)
+            .map(decodeRatesString);
+    };
+
+    var applyUIChange = function (rates) {
+        _.each(rates, function (rate) {
+            var strRateValue = rate.value.toFixed(4);
+            $('#' + rate.key).find('.value').text(strRateValue);
+        });
+    };
+
+    var pushGraphData = function (rates) {
+        _.each(GRAPHS, function (graph) {
+            _.each(rates, function (rate) {
+                if (graph.id == rate.key) {
+                    graph.graph.push(rate.value);
+                }
             });
         });
+    };
 
+    var obsRates = getObsRates();
 
-
-    // WebSocket
-    (function () {
-
-        var socket = new WebSocket("ws://localhost:8888");
-
-        socket.onopen = function () {
-            console.log("client: opened");
-            // socket.send("init");
-        };
-
-        socket.onmessage = function (message) {
-            if (message.data == "ping") {
-                console.log("client: received ping, sending pong");
-                socket.send("pong");
-            }
-        };
-
-        socket.onclose = function () {
-            console.log("client: closed");
-        };
-    })();
+    obsRates
+        .subscribe(applyUIChange);
+    
+    obsRates
+        .subscribe(pushGraphData);
 });
 
 var D3Graph = function (selector) {
@@ -154,8 +104,12 @@ var D3Graph = function (selector) {
             };
         }
         var goldenRatio = 1.6180;
-        var dataMin = _.min(dataset, function (d) { return d.v; }).v;
-        var dataMax = _.max(dataset, function (d) { return d.v; }).v;
+        var dataMin = _.min(dataset, function (d) {
+            return d.v;
+        }).v;
+        var dataMax = _.max(dataset, function (d) {
+            return d.v;
+        }).v;
         if (dataMin == dataMax) {
             dataMin -= 1;
             dataMax += 1;
@@ -212,7 +166,7 @@ var D3Graph = function (selector) {
         .attr("height", height);
 
     var lineFunction = d3.svg.line()
-        .x(function (d, i) {
+        .x(function (d) {
             return xScale(d.t);
         })
         .y(function (d) {
@@ -238,7 +192,7 @@ var D3Graph = function (selector) {
         yScale.domain([yDomain.min, yDomain.max]);
 
         var lineFunction = d3.svg.line()
-            .x(function (d, i) {
+            .x(function (d) {
                 return xScale(d.t);
             })
             .y(function (d) {
