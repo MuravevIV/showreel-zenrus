@@ -85,6 +85,7 @@ var D3Graph = function (selector) {
         .append("svg")
         .attr("width", baseWidth)
         .attr("height", baseHeight)
+        .attr("style", "margin: 0 auto;")
         .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
