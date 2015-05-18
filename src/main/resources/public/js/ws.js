@@ -1,6 +1,8 @@
-$(document).ready(function () {
+var rxSocket;
 
-    var rxSocket = Rx.DOM.fromWebSocket('ws://' + window.location.hostname + ':8000', null,
+var requestWebsocket = function () {
+
+    rxSocket = Rx.DOM.fromWebSocket('ws://' + window.location.hostname + ':8080/api/ws', null,
         Rx.Observer.create(function (e) {
             console.log('opened');
         }),
@@ -19,4 +21,9 @@ $(document).ready(function () {
             console.log('closed');
         }
     );
+};
+
+$(document).ready(function () {
+
+    requestWebsocket();
 });
