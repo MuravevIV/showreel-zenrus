@@ -5,6 +5,8 @@ import java.util.Currency
 import com.ilyamur.bixbite.finance.yahoo.YahooFinance
 import com.ilyamur.twitter.finatra.{ControllerWebsocket, WebSocketClient}
 import com.twitter.util.FuturePool
+import rx.lang.scala.{Subscription, Observable}
+import scala.concurrent.duration._
 
 class AppController(yahooFinance: YahooFinance, futurePool: FuturePool) extends ControllerWebsocket {
 
@@ -31,24 +33,21 @@ class AppController(yahooFinance: YahooFinance, futurePool: FuturePool) extends 
         }
     }
 
+    lazy val obs: Observable[String] = Observable.timer(0 seconds, 5 seconds).map { _ =>
+        yahooFinance.getCurrencyRateMap(Map(
+            "USDRUB" ->(Currency.getInstance("USD"), Currency.getInstance("RUB")),
+            "EURRUB" ->(Currency.getInstance("EUR"), Currency.getInstance("RUB"))
+        )).map { case (key, value) =>
+            s"${key}:${value}"
+        }.mkString(";")
+    }
+
     websocket("/api/ws") { ws: WebSocketClient =>
-        ws.onMessage { message =>
-            try {
-                println(s"$ws: message: $message")
-            } catch {
-                case t: Throwable =>
-                    println(t.getMessage)
-            }
-            /*
-            Executors.newSingleThreadScheduledExecutor().schedule(new Runnable {
-                def run(): Unit = {
-                    ws.send("test")
-                }
-            }, 10, TimeUnit.SECONDS)
-            */
+        val subscription: Subscription = obs.subscribe { message =>
+            ws.send(message)
         }
         ws.onClose {
-            println(s"$ws: closed")
+            subscription.unsubscribe()
         }
     }
 
