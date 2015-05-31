@@ -15,7 +15,16 @@ $(document).ready(function () {
 
         var POLL_PERIOD = 5000;
 
-        var rxSocket = Rx.DOM.fromWebSocket('ws://' + window.location.hostname + ':8080/api/ws', null,
+        var websocketPort;
+        if ((typeof window.location.port !== "undefined") && (window.location.port !== "")) {
+            // test environment
+            websocketPort = 8080;
+        } else {
+            // production environment
+            websocketPort = 8000;
+        }
+
+        var rxSocket = Rx.DOM.fromWebSocket('ws://' + window.location.hostname + ':' + websocketPort + '/api/ws', null,
             Rx.Observer.create(function (e) {
                 console.log('websocket opened');
             }),
