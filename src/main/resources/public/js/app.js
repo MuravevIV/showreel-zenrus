@@ -15,16 +15,14 @@ $(document).ready(function () {
 
         var POLL_PERIOD = 5000;
 
-        var firePeriodically = function () {
-            return Rx.Observable.timer(0, POLL_PERIOD);
-        };
-
-        var pollRatesString = function () {
-            return $.ajax({
-                url: '/api/rates',
-                dataType: 'text'
-            }).promise();
-        };
+        var rxSocket = Rx.DOM.fromWebSocket('ws://' + window.location.hostname + ':8080/api/ws', null,
+            Rx.Observer.create(function (e) {
+                console.log('websocket opened');
+            }),
+            Rx.Observer.create(function (e) {
+                console.log('websocket closed');
+            })
+        );
 
         var decodeRatesString = function (ratesString) {
             return _.chain(ratesString.split(';'))
@@ -40,8 +38,10 @@ $(document).ready(function () {
                 .value();
         };
 
-        return firePeriodically()
-            .flatMapLatest(pollRatesString)
+        return rxSocket
+            .map(function (messageEvent) {
+                return messageEvent.data;
+            })
             .map(decodeRatesString);
     };
 
