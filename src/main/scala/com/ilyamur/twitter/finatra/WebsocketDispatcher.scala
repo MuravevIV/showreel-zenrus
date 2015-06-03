@@ -3,8 +3,11 @@ package com.ilyamur.twitter.finatra
 import com.twitter.concurrent.Broker
 import com.twitter.finagle.websocket.WebSocket
 import org.jboss.netty.channel.{ChannelEvent, ChannelHandlerContext, ChannelUpstreamHandler, UpstreamMessageEvent}
+import org.slf4j.LoggerFactory
 
 class WebsocketDispatcher(callback: WebSocketClient => Unit) extends ChannelUpstreamHandler {
+
+    private val _log = LoggerFactory.getLogger(getClass)
 
     def handleUpstream(ctx: ChannelHandlerContext, e: ChannelEvent): Unit = {
         e match {
@@ -20,7 +23,7 @@ class WebsocketDispatcher(callback: WebSocketClient => Unit) extends ChannelUpst
                             ctx.getChannel.write(respWebSocket)
                         } catch {
                             case t: Throwable =>
-                                println(t.getMessage)
+                                _log.error("Websocker request failure", t)
                         }
                     case _ =>
                         ctx.sendUpstream(e)
