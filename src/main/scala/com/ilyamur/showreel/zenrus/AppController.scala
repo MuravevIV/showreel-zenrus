@@ -33,7 +33,8 @@ class AppController(yahooFinance: YahooFinance, futurePool: FuturePool) extends 
         }
     }
 
-    lazy val obs: Observable[String] = Observable.timer(0 seconds, 5 seconds).map { _ =>
+    val obsRates: Observable[String] = Observable.timer(0 seconds, 5 seconds).map { _ =>
+        println(s"Polling from ${Thread.currentThread()}")
         yahooFinance.getCurrencyRateMap(Map(
             "USDRUB" ->(Currency.getInstance("USD"), Currency.getInstance("RUB")),
             "EURRUB" ->(Currency.getInstance("EUR"), Currency.getInstance("RUB"))
@@ -42,8 +43,11 @@ class AppController(yahooFinance: YahooFinance, futurePool: FuturePool) extends 
         }.mkString(";")
     }
 
+    val obsRatesHot = obsRates.publish
+    obsRatesHot.connect
+
     websocket("/api/ws") { ws: WebSocketClient =>
-        val subscription: Subscription = obs.subscribe { message =>
+        val subscription: Subscription = obsRatesHot.subscribe { message =>
             ws.send(message)
         }
         ws.onClose {
