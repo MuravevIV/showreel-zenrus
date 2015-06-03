@@ -71,13 +71,10 @@ $(document).ready(function () {
         });
     };
 
-    var obsRates = getObsRates();
-
-    obsRates
-        .subscribe(applyUIChange);
-    
-    obsRates
-        .subscribe(pushGraphData);
+    getObsRates().subscribe(function (rates) {
+        applyUIChange(rates);
+        pushGraphData(rates);
+    });
 });
 
 var D3Graph = function (selector) {
