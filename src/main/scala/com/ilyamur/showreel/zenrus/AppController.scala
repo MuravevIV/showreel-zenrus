@@ -35,7 +35,8 @@ class AppController(yahooFinance: YahooFinance, futurePool: FuturePool) extends 
 
     val obsRates: Observable[String] = Observable.timer(0 seconds, 5 seconds).map { _ =>
         println(s"Polling from ${Thread.currentThread()}")
-        yahooFinance.getCurrencyRateMap(Map(
+        val ratesMessageCode = 0.asInstanceOf[Char]
+        ratesMessageCode + yahooFinance.getCurrencyRateMap(Map(
             "USDRUB" ->(Currency.getInstance("USD"), Currency.getInstance("RUB")),
             "EURRUB" ->(Currency.getInstance("EUR"), Currency.getInstance("RUB"))
         )).map { case (key, value) =>
@@ -47,8 +48,8 @@ class AppController(yahooFinance: YahooFinance, futurePool: FuturePool) extends 
     obsRatesHot.connect
 
     websocket("/api/ws") { ws: WebSocketClient =>
-        val subscription: Subscription = obsRatesHot.subscribe { message =>
-            ws.send(message)
+        val subscription: Subscription = obsRatesHot.subscribe { ratesMessage =>
+            ws.send(ratesMessage)
         }
         ws.onClose {
             subscription.unsubscribe()

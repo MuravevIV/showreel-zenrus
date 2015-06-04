@@ -11,28 +11,46 @@ $(document).ready(function () {
         }
     ];
 
+    var Message = function () {
+        //
+    };
+    Message.Type = {
+        RATES: 0
+    };
+    Message.getType = function (message) {
+        return message.charCodeAt(0);
+    };
+    Message.getBody = function (message) {
+        return message.substring(1);
+    };
+
+    var websocketPort;
+    if ((typeof window.location.port !== "undefined") && (window.location.port !== "")) {
+        // test environment
+        websocketPort = 8080;
+    } else {
+        // production environment
+        websocketPort = 8000;
+    }
+
+    var rxSocket = Rx.DOM.fromWebSocket('ws://' + window.location.hostname + ':' + websocketPort + '/api/ws', null,
+        Rx.Observer.create(function (e) {
+            // websocket opened
+        }),
+        Rx.Observer.create(function (e) {
+            // websocket closed
+        })
+    );
+
+    var rxMessageStream = rxSocket
+        .map(function (messageEvent) {
+            return messageEvent.data;
+        });
+
     var getObsRates = function () {
 
-        var websocketPort;
-        if ((typeof window.location.port !== "undefined") && (window.location.port !== "")) {
-            // test environment
-            websocketPort = 8080;
-        } else {
-            // production environment
-            websocketPort = 8000;
-        }
-
-        var rxSocket = Rx.DOM.fromWebSocket('ws://' + window.location.hostname + ':' + websocketPort + '/api/ws', null,
-            Rx.Observer.create(function (e) {
-                // websocket opened
-            }),
-            Rx.Observer.create(function (e) {
-                // websocket closed
-            })
-        );
-
-        var decodeRatesString = function (ratesString) {
-            return _.chain(ratesString.split(';'))
+        var decodeRatesMessage = function (rates) {
+            return _.chain(rates.split(';'))
                 .map(function (item) {
                     return item.split(':');
                 })
@@ -45,11 +63,14 @@ $(document).ready(function () {
                 .value();
         };
 
-        return rxSocket
-            .map(function (messageEvent) {
-                return messageEvent.data;
+        return rxMessageStream
+            .filter(function (message) {
+                return (Message.getType(message) === Message.Type.RATES);
             })
-            .map(decodeRatesString);
+            .map(function (message) {
+                return Message.getBody(message);
+            })
+            .map(decodeRatesMessage);
     };
 
     var applyUIChange = function (rates) {
