@@ -33,17 +33,7 @@ class AppController(yahooFinance: YahooFinance, futurePool: FuturePool) extends 
             render.plain(ratesString)
         }
     }
-
-    object Message {
-
-        trait Type { val code: Int }
-        case object Rates extends Type { val code = 0 }
-
-        def encode(messageBody: String, t: Type): String = {
-            t.code.asInstanceOf[Char] + messageBody
-        }
-    }
-
+    
     val obsRatesMap: Observable[Map[String, Double]] = Observable.timer(0 seconds, 5 seconds).map { _ =>
         yahooFinance.getCurrencyRateMap(Map(
             "USDRUB" ->(Currency.getInstance("USD"), Currency.getInstance("RUB")),
@@ -60,9 +50,7 @@ class AppController(yahooFinance: YahooFinance, futurePool: FuturePool) extends 
                 s"${key}:${value}"
             }.mkString(";")
         }
-    }.map { messageBody =>
-        Message.encode(messageBody, Message.Rates)
-    }
+    }.map(MessageRates.encode)
 
     websocket("/api/ws") { ws: WebSocketClient =>
         val subscription: Subscription = obsRatesMessage.subscribe { ratesMessage =>
