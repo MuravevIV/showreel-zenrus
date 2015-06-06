@@ -47,7 +47,7 @@ $(document).ready(function () {
             return messageEvent.data;
         });
 
-    var getObsRates = function () {
+    var obsRates = new (function () {
 
         var decodeRatesMessage = function (rates) {
             return _.chain(rates.split(';'))
@@ -71,7 +71,9 @@ $(document).ready(function () {
                 return Message.getBody(message);
             })
             .map(decodeRatesMessage);
-    };
+    })();
+
+    var obsRatesHot = obsRates.publish();
 
     var applyUIChange = function (rates) {
         _.each(rates, function (rate) {
@@ -90,10 +92,9 @@ $(document).ready(function () {
         });
     };
 
-    getObsRates().subscribe(function (rates) {
-        applyUIChange(rates);
-        pushGraphData(rates);
-    });
+    obsRatesHot.subscribe(applyUIChange);
+    obsRatesHot.subscribe(pushGraphData);
+    obsRatesHot.connect();
 });
 
 var D3Graph = function (selector) {
