@@ -1,99 +1,106 @@
 $(document).ready(function () {
 
-    var GRAPHS = [
-        {
-            id: "USDRUB",
-            graph: new D3Graph('#USDRUB')
-        },
-        {
-            id: "EURRUB",
-            graph: new D3Graph('#EURRUB')
-        }
-    ];
+    var ui = new (function () {
 
-    var Message = function () {
-        //
-    };
-    Message.Type = {
-        RATES: 0
-    };
-    Message.getType = function (message) {
-        return message.charCodeAt(0);
-    };
-    Message.getBody = function (message) {
-        return message.substring(1);
-    };
+        var GRAPHS = [
+            {
+                id: "USDRUB",
+                graph: new D3Graph('#USDRUB')
+            },
+            {
+                id: "EURRUB",
+                graph: new D3Graph('#EURRUB')
+            }
+        ];
 
-    var websocketPort;
-    if ((typeof window.location.port !== "undefined") && (window.location.port !== "")) {
-        // test environment
-        websocketPort = 8080;
-    } else {
-        // production environment
-        websocketPort = 8000;
-    }
-
-    var rxSocket = Rx.DOM.fromWebSocket('ws://' + window.location.hostname + ':' + websocketPort + '/api/ws', null,
-        Rx.Observer.create(function (e) {
-            // websocket opened
-        }),
-        Rx.Observer.create(function (e) {
-            // websocket closed
-        })
-    );
-
-    var rxMessageStream = rxSocket
-        .map(function (messageEvent) {
-            return messageEvent.data;
-        });
-
-    var obsRates = new (function () {
-
-        var decodeRatesMessage = function (rates) {
-            return _.chain(rates.split(';'))
-                .map(function (item) {
-                    return item.split(':');
-                })
-                .map(function (pair) {
-                    return {
-                        key: pair[0],
-                        value: parseFloat(pair[1])
-                    };
-                })
-                .value();
+        this.changeValues = function (rates) {
+            _.each(rates, function (rate) {
+                var strRateValue = rate.value.toFixed(4);
+                $('#' + rate.key).find('.value').text(strRateValue);
+            });
         };
 
-        return rxMessageStream
-            .filter(function (message) {
-                return (Message.getType(message) === Message.Type.RATES);
-            })
-            .map(function (message) {
-                return Message.getBody(message);
-            })
-            .map(decodeRatesMessage);
+        this.pushGraphData = function (rates) {
+            _.each(GRAPHS, function (graph) {
+                _.each(rates, function (rate) {
+                    if (graph.id == rate.key) {
+                        graph.graph.push(rate.value);
+                    }
+                });
+            });
+        };
     })();
 
-    var obsRatesHot = obsRates.publish();
+    var eventPipes = new (function () {
 
-    var applyUIChange = function (rates) {
-        _.each(rates, function (rate) {
-            var strRateValue = rate.value.toFixed(4);
-            $('#' + rate.key).find('.value').text(strRateValue);
-        });
-    };
+        var Message = function () {
+            //
+        };
+        Message.Type = {
+            RATES: 0
+        };
+        Message.getType = function (message) {
+            return message.charCodeAt(0);
+        };
+        Message.getBody = function (message) {
+            return message.substring(1);
+        };
 
-    var pushGraphData = function (rates) {
-        _.each(GRAPHS, function (graph) {
-            _.each(rates, function (rate) {
-                if (graph.id == rate.key) {
-                    graph.graph.push(rate.value);
-                }
+        var websocketPort;
+        if ((typeof window.location.port !== "undefined") && (window.location.port !== "")) {
+            // test environment
+            websocketPort = 8080;
+        } else {
+            // production environment
+            websocketPort = 8000;
+        }
+
+        var rxSocket = Rx.DOM.fromWebSocket('ws://' + window.location.hostname + ':' + websocketPort + '/api/ws', null,
+            Rx.Observer.create(function (e) {
+                // websocket opened
+            }),
+            Rx.Observer.create(function (e) {
+                // websocket closed
+            })
+        );
+
+        var rxMessageStream = rxSocket
+            .map(function (messageEvent) {
+                return messageEvent.data;
             });
-        });
-    };
 
-    obsRatesHot.subscribe(applyUIChange);
-    obsRatesHot.subscribe(pushGraphData);
+        var obsRates = new (function () {
+
+            var decodeRatesMessage = function (rates) {
+                return _.chain(rates.split(';'))
+                    .map(function (item) {
+                        return item.split(':');
+                    })
+                    .map(function (pair) {
+                        return {
+                            key: pair[0],
+                            value: parseFloat(pair[1])
+                        };
+                    })
+                    .value();
+            };
+
+            return rxMessageStream
+                .filter(function (message) {
+                    return (Message.getType(message) === Message.Type.RATES);
+                })
+                .map(function (message) {
+                    return Message.getBody(message);
+                })
+                .map(decodeRatesMessage);
+        })();
+
+        this.obsRatesHot = obsRates.publish();
+    })();
+
+    var obsRatesHot = eventPipes.obsRatesHot;
+    obsRatesHot.subscribe(ui.changeValues);
+    obsRatesHot.subscribe(ui.pushGraphData);
     obsRatesHot.connect();
 });
 
