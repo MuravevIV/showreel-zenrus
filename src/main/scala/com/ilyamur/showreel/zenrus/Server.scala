@@ -19,6 +19,7 @@ object Server extends FinatraServerWebosket with Macwire {
     lazy val yahooFinance: YahooFinance = wire[YahooFinance]
     lazy val executionService = Executors.newCachedThreadPool()
     lazy val futurePool = FuturePool(executionService)
+    lazy val eventPipes = wire[EventPipes]
     lazy val appController = wire[AppController]
     lazy val ratesPoller = wire[RatesPoller]
 
