@@ -103,8 +103,8 @@
 
         <dependency>
             <groupId>io.reactivex</groupId>
-            <artifactId>rxscala_2.10</artifactId>
-            <version>0.24.1</version>
+            <artifactId>rxjava</artifactId>
+            <version>1.0.8</version>
         </dependency>
 
         <dependency>

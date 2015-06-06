@@ -2,7 +2,7 @@ package com.ilyamur.showreel.zenrus
 
 import com.ilyamur.twitter.finatra.{ControllerWebsocket, WebSocketClient}
 import com.twitter.util.FuturePool
-import rx.lang.scala.Subscription
+import rx.functions.Action1
 
 class AppController(eventPipes: EventPipes, futurePool: FuturePool) extends ControllerWebsocket {
 
@@ -11,9 +11,11 @@ class AppController(eventPipes: EventPipes, futurePool: FuturePool) extends Cont
     }
 
     websocket("/api/ws") { ws: WebSocketClient =>
-        val subscription: Subscription = eventPipes.ratesMessage.subscribe { ratesMessage =>
-            ws.send(ratesMessage)
-        }
+        val subscription = eventPipes.ratesMessage.subscribe(new Action1[String] {
+            override def call(ratesMessage: String): Unit = {
+                ws.send(ratesMessage)
+            }
+        })
         ws.onClose {
             subscription.unsubscribe()
         }
