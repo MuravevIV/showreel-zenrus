@@ -11,7 +11,7 @@ import rx.observables.ConnectableObservable
 
 class EventPipes(yahooFinance: YahooFinance) {
 
-    val ratesMap: Observable[Map[String, Double]] =
+    val obsRatesMap: Observable[Map[String, Double]] =
         Observable.timer(0, 5, TimeUnit.SECONDS).map(new Func1[JLong, Map[String, Double]] {
             override def call(num: JLong): Map[String, Double] = {
                 yahooFinance.getCurrencyRateMap(Map(
@@ -21,11 +21,11 @@ class EventPipes(yahooFinance: YahooFinance) {
             }
         })
 
-    val ratesMapHot: ConnectableObservable[Map[String, Double]] = ratesMap.publish()
-    ratesMapHot.connect()
+    val obsRatesMapHot: ConnectableObservable[Map[String, Double]] = obsRatesMap.publish()
+    obsRatesMapHot.connect()
 
-    val ratesMessage: Observable[String] = {
-        ratesMapHot.map[String](new Func1[Map[String, Double], String] {
+    val obsRatesMessage: Observable[String] = {
+        obsRatesMapHot.map[String](new Func1[Map[String, Double], String] {
             override def call(ratesMap: Map[String, Double]): String = {
                 ratesMap.map { case (key, value) =>
                     s"${key}:${value}"
