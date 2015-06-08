@@ -23,7 +23,7 @@ class WebsocketDispatcher(callback: WebSocketClient => Unit) extends ChannelUpst
                             ctx.getChannel.write(respWebSocket)
                         } catch {
                             case t: Throwable =>
-                                _log.error("Websocker request failure", t)
+                                _log.error("Websocket request failure", t)
                         }
                     case _ =>
                         ctx.sendUpstream(e)
