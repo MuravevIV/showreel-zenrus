@@ -2,18 +2,24 @@ package com.ilyamur.showreel.zenrus
 
 import java.lang.{Long => JLong}
 import java.util.Currency
-import java.util.concurrent.TimeUnit
+import java.util.concurrent.{ConcurrentLinkedQueue, TimeUnit}
 
 import com.ilyamur.bixbite.finance.yahoo.YahooFinance
 import rx.Observable
-import rx.functions.Func1
-import rx.observables.ConnectableObservable
+import rx.functions.{Action1, Func1}
+
+import scala.collection.JavaConverters._
 
 class EventPipes(yahooFinance: YahooFinance) {
 
-    val obsRatesMap: Observable[Map[String, Double]] =
-        Observable.timer(0, 5, TimeUnit.SECONDS).map(new Func1[JLong, Map[String, Double]] {
-            override def call(num: JLong): Map[String, Double] = {
+    type CM = Map[String, Double]
+    type CCM = ConcurrentLinkedQueue[CM]
+
+
+    val obsRatesMap: Observable[CM] =
+        Observable.timer(0, 5, TimeUnit.SECONDS).map(new Func1[JLong, CM] {
+            override def call(num: JLong): CM = {
+                println("polling")
                 yahooFinance.getCurrencyRateMap(Map(
                     "USDRUB" ->(Currency.getInstance("USD"), Currency.getInstance("RUB")),
                     "EURRUB" ->(Currency.getInstance("EUR"), Currency.getInstance("RUB"))
@@ -21,18 +27,60 @@ class EventPipes(yahooFinance: YahooFinance) {
             }
         })
 
-    val obsRatesMapHot: ConnectableObservable[Map[String, Double]] = obsRatesMap.publish()
-    obsRatesMapHot.connect()
+    val obsRatesMapShared = obsRatesMap.share()
 
-    val obsRatesMessage: Observable[String] = {
-        obsRatesMapHot.map[String](new Func1[Map[String, Double], String] {
-            override def call(ratesMap: Map[String, Double]): String = {
-                ratesMap.map { case (key, value) =>
-                    s"${key}:${value}"
-                }.mkString(";")
+
+    val ratesMapToString = new Func1[CM, String] {
+        override def call(ratesMap: CM): String = {
+            ratesMap.map { case (key, value) =>
+                s"${key}:${value}"
+            }.mkString(";")
+        }
+    }
+
+
+    val obsRatesString: Observable[String] = {
+        obsRatesMapShared.map[String](ratesMapToString)
+    }
+
+    
+    val memory = new CCM()
+
+    obsRatesMapShared.subscribe(new Action1[CM] {
+        override def call(cm: CM): Unit = {
+            memory.add(cm)
+        }
+    })
+
+    
+    val obsRatesCCMLast: Observable[CCM] = Observable.just(memory)
+
+    val obsRatesCollectedStringLast: Observable[String] =
+        obsRatesCCMLast.map[String](new Func1[CCM, String] {
+            override def call(cmList: CCM): String = {
+                cmList.asScala.view.map { cm =>
+                    ratesMapToString.call(cm)
+                }.mkString("|")
             }
         })
-    }.map(new Func1[String, String] {
+
+
+    val obsMessageRates: Observable[String] = obsRatesString.map(new Func1[String, String] {
         override def call(body: String): String = MessageRates.encode(body)
     })
+
+    val obsMessageRatesShared: Observable[String] = obsMessageRates.share()
+
+
+    val obsMessageRatesCollection: Observable[String] = obsRatesCollectedStringLast.map(new Func1[String, String] {
+        override def call(body: String): String = {
+            MessageRatesCollected.encode(body)
+        }
+    })
+
+
+    val obsMessages: Observable[String] = Observable.merge(
+        obsMessageRatesShared,
+        obsMessageRatesCollection
+    )
 }

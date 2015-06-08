@@ -11,7 +11,7 @@ class AppController(eventPipes: EventPipes, futurePool: FuturePool) extends Cont
     }
 
     websocket("/api/ws") { ws: WebSocketClient =>
-        val subscription = eventPipes.obsRatesMessage.subscribe(new Action1[String] {
+        val subscription = eventPipes.obsMessages.subscribe(new Action1[String] {
             override def call(ratesMessage: String): Unit = {
                 ws.send(ratesMessage)
             }
