@@ -37,7 +37,8 @@ $(document).ready(function () {
             //
         };
         Message.Type = {
-            RATES: 0
+            RATES: 0,
+            RATES_COLLECTION: 1
         };
         Message.getType = function (message) {
             return message.charCodeAt(0);
@@ -69,39 +70,51 @@ $(document).ready(function () {
                 return messageEvent.data;
             });
 
-        var obsRates = new (function () {
+        var rxMessageStreamHot = rxMessageStream.publish();
 
-            var decodeRatesMessage = function (rates) {
-                return _.chain(rates.split(';'))
-                    .map(function (item) {
-                        return item.split(':');
-                    })
-                    .map(function (pair) {
-                        return {
-                            key: pair[0],
-                            value: parseFloat(pair[1])
-                        };
-                    })
-                    .value();
-            };
-
-            return rxMessageStream
-                .filter(function (message) {
-                    return (Message.getType(message) === Message.Type.RATES);
+        var decodeRatesMessage = function (rates) {
+            return _.chain(rates.split(';'))
+                .map(function (item) {
+                    return item.split(':');
                 })
-                .map(function (message) {
-                    return Message.getBody(message);
+                .map(function (pair) {
+                    return {
+                        key: pair[0],
+                        value: parseFloat(pair[1])
+                    };
                 })
-                .map(decodeRatesMessage);
-        })();
+                .value();
+        };
 
-        this.obsRatesHot = obsRates.publish();
+        this.obsRates = rxMessageStreamHot
+            .filter(function (message) {
+                return (Message.getType(message) === Message.Type.RATES);
+            })
+            .map(function (message) {
+                return Message.getBody(message);
+            })
+            .map(decodeRatesMessage);
+
+        this.obsRatesCollection = rxMessageStreamHot
+            .filter(function (message) {
+                return (Message.getType(message) === Message.Type.RATES_COLLECTION);
+            })
+            .map(function (message) {
+                return Message.getBody(message);
+            });
+
+        this.start = function () {
+            rxMessageStreamHot.connect();
+        }
     })();
 
-    var obsRatesHot = eventPipes.obsRatesHot;
-    obsRatesHot.subscribe(ui.changeValues);
-    obsRatesHot.subscribe(ui.pushGraphData);
-    obsRatesHot.connect();
+    eventPipes.obsRates.subscribe(ui.changeValues);
+    eventPipes.obsRates.subscribe(ui.pushGraphData);
+    eventPipes.obsRatesCollection.subscribe(function (messageRatesCollection) {
+        console.log("Got messageRatesCollection", messageRatesCollection);
+    });
+
+    eventPipes.start();
 });
 
 var D3Graph = function (selector) {
