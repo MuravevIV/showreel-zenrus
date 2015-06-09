@@ -20,11 +20,21 @@ $(document).ready(function () {
             });
         };
 
-        this.pushGraphData = function (rates) {
+        this.pushGraphData = function (coupledRates) {
             _.each(GRAPHS, function (graph) {
-                _.each(rates, function (rate) {
+                _.each(coupledRates, function (rate) {
                     if (graph.id == rate.key) {
-                        graph.graph.push(rate.value);
+                        graph.graph.push(rate);
+                    }
+                });
+            });
+        };
+
+        this.pushGraphDataList = function (ratesLists) {
+            _.each(GRAPHS, function (graph) {
+                _.each(ratesLists, function (ratesList, key) {
+                    if (graph.id == key) {
+                        graph.graph.pushList(ratesList);
                     }
                 });
             });
@@ -73,12 +83,16 @@ $(document).ready(function () {
         var rxMessageStreamHot = rxMessageStream.publish();
 
         var decodeRatesMessage = function (rates) {
-            return _.chain(rates.split(';'))
+            var timstamedPair = rates.split('!');
+            var ratesTimestamp = timstamedPair[0];
+            var ratesValue = timstamedPair[1];
+            return _.chain(ratesValue.split(';'))
                 .map(function (item) {
                     return item.split(':');
                 })
                 .map(function (pair) {
                     return {
+                        ts: ratesTimestamp,
                         key: pair[0],
                         value: parseFloat(pair[1])
                     };
@@ -101,6 +115,20 @@ $(document).ready(function () {
             })
             .map(function (message) {
                 return Message.getBody(message);
+            })
+            .map(function (ratesCollectionString) {
+                return ratesCollectionString.split("|");
+            })
+            .map(function (ratesString) {
+                return _.map(ratesString, decodeRatesMessage);
+            })
+            .map(function (coupledRatesList) {
+                return _.chain(coupledRatesList)
+                    .flatten()
+                    .groupBy(function (item) {
+                        return item.key;
+                    })
+                    .value();
             });
 
         this.start = function () {
@@ -110,9 +138,7 @@ $(document).ready(function () {
 
     eventPipes.obsRates.subscribe(ui.changeValues);
     eventPipes.obsRates.subscribe(ui.pushGraphData);
-    eventPipes.obsRatesCollection.subscribe(function (messageRatesCollection) {
-        console.log("Got messageRatesCollection", messageRatesCollection);
-    });
+    eventPipes.obsRatesCollection.subscribe(ui.pushGraphDataList);
 
     eventPipes.start();
 });
@@ -259,15 +285,20 @@ var D3Graph = function (selector) {
             .call(yAxis);
     };
 
-    this.push = function (newValue) {
-        var now = new Date();
-        dataset.push({
-            t: now,
-            v: newValue
+    var pushList = this.pushList = function (ratesList) {
+        ratesList.forEach(function (rate) {
+            dataset.push({
+                t: new Date(parseInt(rate.ts)),
+                v: rate.value
+            });
         });
         if (dataset.length > maxDatasetSize) {
             dataset.shift();
         }
         redraw();
+    };
+
+    this.push = function (rate) {
+        pushList([rate]);
     };
 };
