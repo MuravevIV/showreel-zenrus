@@ -192,8 +192,6 @@ var D3Graph = function (selector) {
 
     var dataset = [];
 
-    var maxDatasetSize = 15;
-
     var getYDomain = function (dataset) {
         if (dataset.length == 0) {
             return {
@@ -318,9 +316,6 @@ var D3Graph = function (selector) {
                 v: rate.value
             });
         });
-        if (dataset.length > maxDatasetSize) {
-            dataset.shift();
-        }
         redraw();
     };
 
