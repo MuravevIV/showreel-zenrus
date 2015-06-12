@@ -13,6 +13,12 @@ $(document).ready(function () {
             }
         ];
 
+        this.setGraphsTimeshift = function (tsTimeshift) {
+            _.each(GRAPHS, function (g) {
+                g.graph.setTimeshift(tsTimeshift);
+            });
+        };
+
         this.changeValues = function (rates) {
             _.each(rates, function (rate) {
                 var strRateValue = rate.value.toFixed(4);
@@ -48,7 +54,8 @@ $(document).ready(function () {
         };
         Message.Type = {
             RATES: 0,
-            RATES_COLLECTION: 1
+            RATES_COLLECTION: 1,
+            SERVER_TIMESTAMP: 2
         };
         Message.getType = function (message) {
             return message.charCodeAt(0);
@@ -92,7 +99,7 @@ $(document).ready(function () {
                 })
                 .map(function (pair) {
                     return {
-                        ts: ratesTimestamp,
+                        ts: parseInt(ratesTimestamp),
                         key: pair[0],
                         value: parseFloat(pair[1])
                     };
@@ -131,6 +138,21 @@ $(document).ready(function () {
                     .value();
             });
 
+        this.obsTimeshift = rxMessageStreamHot
+            .filter(function (message) {
+                return (Message.getType(message) === Message.Type.SERVER_TIMESTAMP);
+            })
+            .map(function (message) {
+                return Message.getBody(message);
+            })
+            .map(function (strServerTimestamp) {
+                return parseInt(strServerTimestamp);
+            })
+            .map(function (serverTimestamp) {
+                var clientTimestamp = (new Date()).getTime();
+                return clientTimestamp - serverTimestamp;
+            });
+
         this.start = function () {
             rxMessageStreamHot.connect();
         }
@@ -139,6 +161,7 @@ $(document).ready(function () {
     eventPipes.obsRates.subscribe(ui.changeValues);
     eventPipes.obsRates.subscribe(ui.pushGraphData);
     eventPipes.obsRatesCollection.subscribe(ui.pushGraphDataList);
+    eventPipes.obsTimeshift.subscribe(ui.setGraphsTimeshift);
 
     eventPipes.start();
 });
@@ -164,6 +187,8 @@ var D3Graph = function (selector) {
     //
 
     var now = new Date();
+
+    var _tsTimeshift = 0;
 
     var dataset = [];
 
@@ -288,7 +313,8 @@ var D3Graph = function (selector) {
     var pushList = this.pushList = function (ratesList) {
         ratesList.forEach(function (rate) {
             dataset.push({
-                t: new Date(parseInt(rate.ts)),
+                ts: rate.ts,
+                t: new Date(rate.ts + _tsTimeshift),
                 v: rate.value
             });
         });
@@ -300,5 +326,14 @@ var D3Graph = function (selector) {
 
     this.push = function (rate) {
         pushList([rate]);
+    };
+
+    this.setTimeshift = function (tsTimeshift) {
+        _tsTimeshift = tsTimeshift;
+        _.each(dataset, function (d) {
+            d.t = new Date(d.ts + tsTimeshift);
+        });
+        redraw();
+        console.log('Graph ' + selector + ' - set timeshift ' + tsTimeshift);
     };
 };
