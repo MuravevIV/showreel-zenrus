@@ -7,32 +7,33 @@ import java.util.concurrent.{ConcurrentLinkedQueue, TimeUnit}
 import com.ilyamur.bixbite.finance.yahoo.YahooFinance
 import rx.Observable
 import rx.functions.{Action1, Func1}
+import rx.schedulers.Timestamped
 
 import scala.collection.JavaConverters._
 
 class EventPipes(yahooFinance: YahooFinance) {
 
-    type CM = Map[String, Double]
-    type CCM = ConcurrentLinkedQueue[CM]
+    type M = Map[String, Double]
+    type TM = Timestamped[M]
+    type CTM = ConcurrentLinkedQueue[TM]
 
 
-    val obsRatesMap: Observable[CM] =
-        Observable.timer(0, 5, TimeUnit.SECONDS).map(new Func1[JLong, CM] {
-            override def call(num: JLong): CM = {
-                println("polling")
+    val obsRatesMap: Observable[TM] =
+        Observable.timer(0, 5, TimeUnit.SECONDS).map[M](new Func1[JLong, M] {
+            override def call(num: JLong): M = {
                 yahooFinance.getCurrencyRateMap(Map(
                     "USDRUB" ->(Currency.getInstance("USD"), Currency.getInstance("RUB")),
                     "EURRUB" ->(Currency.getInstance("EUR"), Currency.getInstance("RUB"))
                 ))
             }
-        })
+        }).timestamp()
 
-    val obsRatesMapShared = obsRatesMap.share()
+    val obsRatesMapShared: Observable[TM] = obsRatesMap.share()
 
 
-    val ratesMapToString = new Func1[CM, String] {
-        override def call(ratesMap: CM): String = {
-            ratesMap.map { case (key, value) =>
+    val ratesMapToString = new Func1[TM, String] {
+        override def call(cm: TM): String = {
+            cm.getTimestampMillis + "!" + cm.getValue.map { case (key, value) =>
                 s"${key}:${value}"
             }.mkString(";")
         }
@@ -43,21 +44,21 @@ class EventPipes(yahooFinance: YahooFinance) {
         obsRatesMapShared.map[String](ratesMapToString)
     }
 
-    
-    val memory = new CCM()
 
-    obsRatesMapShared.subscribe(new Action1[CM] {
-        override def call(cm: CM): Unit = {
+    val memory = new CTM()
+
+    obsRatesMapShared.subscribe(new Action1[TM] {
+        override def call(cm: TM): Unit = {
             memory.add(cm)
         }
     })
 
-    
-    val obsRatesCCMLast: Observable[CCM] = Observable.just(memory)
+
+    val obsRatesCCMLast: Observable[CTM] = Observable.just(memory)
 
     val obsRatesCollectedStringLast: Observable[String] =
-        obsRatesCCMLast.map[String](new Func1[CCM, String] {
-            override def call(cmList: CCM): String = {
+        obsRatesCCMLast.map[String](new Func1[CTM, String] {
+            override def call(cmList: CTM): String = {
                 cmList.asScala.view.map { cm =>
                     ratesMapToString.call(cm)
                 }.mkString("|")
