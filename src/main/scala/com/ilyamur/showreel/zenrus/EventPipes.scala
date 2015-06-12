@@ -5,9 +5,10 @@ import java.util.Currency
 import java.util.concurrent.{ConcurrentLinkedQueue, TimeUnit}
 
 import com.ilyamur.bixbite.finance.yahoo.YahooFinance
-import rx.Observable
+import rx.Observable.OnSubscribe
 import rx.functions.{Action1, Func1}
 import rx.schedulers.Timestamped
+import rx.{Observable, Subscriber}
 
 import scala.collection.JavaConverters._
 
@@ -80,8 +81,21 @@ class EventPipes(yahooFinance: YahooFinance) {
     })
 
 
+    val obsMessageServerTimestamp: Observable[String] =
+        Observable.create(new OnSubscribe[String] {
+            override def call(s: Subscriber[_ >: String]): Unit = {
+                s.onNext(String.valueOf(System.currentTimeMillis()))
+                s.onCompleted()
+            }
+        }).map(new Func1[String, String] {
+            override def call(body: String): String = {
+                MessageServerTimestamp.encode(body)
+            }
+        })
+
     val obsMessages: Observable[String] = Observable.merge(
         obsMessageRatesShared,
-        obsMessageRatesCollection
+        obsMessageRatesCollection,
+        obsMessageServerTimestamp
     )
 }
