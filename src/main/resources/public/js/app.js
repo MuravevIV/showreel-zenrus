@@ -19,6 +19,12 @@ $(document).ready(function () {
             });
         };
 
+        this.setGraphsMinBack = function (minBack) {
+            _.each(GRAPHS, function (g) {
+                g.graph.setMinBack(minBack);
+            });
+        };
+
         this.changeValues = function (rates) {
             _.each(rates, function (rate) {
                 var strRateValue = rate.value.toFixed(4);
@@ -189,6 +195,7 @@ var D3Graph = function (selector) {
     var now = new Date();
 
     var _tsTimeshift = 0;
+    var _minBack = 1;
 
     var dataset = [];
 
@@ -222,7 +229,7 @@ var D3Graph = function (selector) {
     //
 
     var xScale = d3.time.scale()
-        .domain([d3.time.minute.offset(now, -1), now])
+        .domain([d3.time.minute.offset(now, -_minBack), now])
         .range([0, width]);
 
     var yDomain = getYDomain(dataset);
@@ -282,7 +289,7 @@ var D3Graph = function (selector) {
 
         var now = new Date();
 
-        xScale.domain([d3.time.minute.offset(now, -1), now]);
+        xScale.domain([d3.time.minute.offset(now, -_minBack), now]);
 
         var yDomain = getYDomain(dataset);
         yScale.domain([yDomain.min, yDomain.max]);
@@ -330,5 +337,11 @@ var D3Graph = function (selector) {
         });
         redraw();
         console.log('Graph ' + selector + ' - set timeshift ' + tsTimeshift);
+    };
+
+
+    this.setMinBack = function (minBack) {
+        _minBack = minBack;
+        redraw();
     };
 };
