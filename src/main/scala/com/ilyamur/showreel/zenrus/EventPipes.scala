@@ -5,18 +5,28 @@ import java.util.Currency
 import java.util.concurrent.{ConcurrentLinkedQueue, TimeUnit}
 
 import com.ilyamur.bixbite.finance.yahoo.YahooFinance
+import org.slf4j.LoggerFactory
 import rx.Observable.OnSubscribe
 import rx.functions.{Action1, Func1}
 import rx.schedulers.Timestamped
-import rx.{Observable, Subscriber}
+import rx.{Observable, Observer, Subscriber}
 
 import scala.collection.JavaConverters._
 
 class EventPipes(yahooFinance: YahooFinance) {
 
+    private val _log = LoggerFactory.getLogger(getClass)
+
     type M = Map[String, Double]
     type TM = Timestamped[M]
     type CTM = ConcurrentLinkedQueue[TM]
+
+
+    val errorLogger: Action1[Throwable] = new Action1[Throwable] {
+        override def call(e: Throwable): Unit = {
+            _log.error("", e)
+        }
+    }
 
 
     val obsRatesMap: Observable[TM] =
@@ -29,7 +39,7 @@ class EventPipes(yahooFinance: YahooFinance) {
             }
         }).timestamp()
 
-    val obsRatesMapShared: Observable[TM] = obsRatesMap.share()
+    val obsRatesMapShared: Observable[TM] = obsRatesMap.share().doOnError(errorLogger).retry()
 
 
     val ratesMapToString = new Func1[TM, String] {
