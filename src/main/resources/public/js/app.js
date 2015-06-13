@@ -129,6 +129,9 @@ $(document).ready(function () {
             .map(function (message) {
                 return Message.getBody(message);
             })
+            .filter(function (ratesCollectionString) {
+                return (ratesCollectionString.length > 0);
+            })
             .map(function (ratesCollectionString) {
                 return ratesCollectionString.split("|");
             })
