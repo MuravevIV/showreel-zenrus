@@ -75,10 +75,10 @@ $(document).ready(function () {
 
         var rxSocket = Rx.DOM.fromWebSocket('ws://' + window.location.hostname + ':' + websocketPort + '/api/ws', null,
             Rx.Observer.create(function (e) {
-                // websocket opened
+                console.trace('websocket opened');
             }),
             Rx.Observer.create(function (e) {
-                // websocket closed
+                console.trace('websocket closed');
             })
         );
 

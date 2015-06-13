@@ -2,30 +2,24 @@ package com.ilyamur.twitter.finatra
 
 import com.twitter.concurrent.Broker
 import com.twitter.finagle.websocket.WebSocket
+import org.slf4j.LoggerFactory
 
 abstract class WebSocketClient(req: WebSocket, broker: Broker[String]) {
 
+    private val _log = LoggerFactory.getLogger(getClass)
+
     def send(message: String): Unit = {
-        try {
-            broker ! message
-        } catch {
-            case t: Throwable => println(t.getMessage)
-        }
+        broker ! message
     }
 
     def onMessage(f: String => Unit): Unit = {
-        try {
-            req.messages.foreach { message =>
-                try {
-                    f(message)
-                } catch {
-                    case t: Throwable =>
-                        println(t.getMessage)
-                }
+        req.messages.foreach { message =>
+            try {
+                f(message)
+            } catch {
+                case e: Throwable =>
+                    _log.error("", e);
             }
-        } catch {
-            case t: Throwable =>
-                println(t.getMessage)
         }
     }
 

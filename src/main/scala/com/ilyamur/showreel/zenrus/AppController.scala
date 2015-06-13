@@ -2,9 +2,12 @@ package com.ilyamur.showreel.zenrus
 
 import com.ilyamur.twitter.finatra.{ControllerWebsocket, WebSocketClient}
 import com.twitter.util.FuturePool
+import org.slf4j.LoggerFactory
 import rx.functions.Action1
 
 class AppController(eventPipes: EventPipes, futurePool: FuturePool) extends ControllerWebsocket {
+
+    private val _log = LoggerFactory.getLogger(getClass)
 
     get("/") { request =>
         render.static("index.html").toFuture
@@ -16,8 +19,10 @@ class AppController(eventPipes: EventPipes, futurePool: FuturePool) extends Cont
                 ws.send(ratesMessage)
             }
         })
+        _log.trace("websocket opened")
         ws.onClose {
             subscription.unsubscribe()
+            _log.trace("websocket closed")
         }
     }
 
