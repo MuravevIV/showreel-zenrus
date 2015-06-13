@@ -304,6 +304,7 @@ var D3Graph = function (selector) {
             .interpolate("linear");
 
         svg.select(".line")
+            .transition()
             .attr("d", lineFunction(dataset));
 
         svg.select(".x.axis")
