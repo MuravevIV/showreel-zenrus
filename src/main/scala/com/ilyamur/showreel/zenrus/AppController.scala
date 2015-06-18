@@ -13,6 +13,11 @@ class AppController(eventPipes: EventPipes, futurePool: FuturePool) extends Cont
         render.static("index.html").toFuture
     }
 
+    get("/ping") { request =>
+        _log.trace("pong")
+        render.plain("pong").toFuture
+    }
+
     websocket("/api/ws") { ws: WebSocketClient =>
         val subscription = eventPipes.obsMessages.subscribe(new Action1[String] {
             override def call(ratesMessage: String): Unit = {
