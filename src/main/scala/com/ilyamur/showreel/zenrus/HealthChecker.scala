@@ -10,7 +10,7 @@ import rx.{Observable, Observer}
 class HealthChecker(httpExecutorSimple: HttpExecutorSimple) {
 
     val CHECK_URL = System.getProperty("app.host") + "/ping"
-    private val PERIOD_SEC = 5
+    private val PERIOD_SEC = 300
 
     private val _log = LoggerFactory.getLogger(getClass)
 
