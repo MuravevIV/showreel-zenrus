@@ -31,6 +31,7 @@
                 <admin.port>9990</admin.port>
                 <websocket.port>8000</websocket.port>
                 <log.dir>${env.OPENSHIFT_LOG_DIR}</log.dir>
+                <app.host>http://${env.OPENSHIFT_APP_DNS}</app.host>
             </properties>
         </profile>
 
@@ -42,6 +43,7 @@
                 <admin.port>9990</admin.port>
                 <websocket.port>8000</websocket.port>
                 <log.dir>${project.basedir}/logs</log.dir>
+                <app.host>http://${server.ip}:${server.port}</app.host>
             </properties>
         </profile>
 
@@ -229,6 +231,10 @@
                         <systemProperty>
                             <key>log.dir</key>
                             <value>${log.dir}</value>
+                        </systemProperty>
+                        <systemProperty>
+                            <key>app.host</key>
+                            <value>${app.host}</value>
                         </systemProperty>
                     </systemProperties>
                 </configuration>

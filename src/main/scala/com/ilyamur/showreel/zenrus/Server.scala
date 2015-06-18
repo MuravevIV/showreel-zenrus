@@ -22,6 +22,8 @@ object Server extends FinatraServerWebosket with Macwire {
     lazy val eventPipes = wire[EventPipes]
     lazy val appController = wire[AppController]
 
+    val healthChecker = wire[HealthChecker]
+
     register(appController)
 
     _log.trace("initialized")
