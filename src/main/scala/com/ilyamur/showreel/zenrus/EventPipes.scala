@@ -1,6 +1,6 @@
 package com.ilyamur.showreel.zenrus
 
-import java.lang.{Long => JLong}
+import java.lang.{Boolean => JBoolean, Long => JLong}
 import java.util.Currency
 import java.util.concurrent.{ConcurrentLinkedQueue, TimeUnit}
 
@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory
 import rx.Observable.OnSubscribe
 import rx.functions.{Action1, Func1}
 import rx.schedulers.Timestamped
-import rx.{Observable, Observer, Subscriber}
+import rx.{Observable, Subscriber}
 
 import scala.collection.JavaConverters._
 
@@ -39,7 +39,23 @@ class EventPipes(yahooFinance: YahooFinance) {
             }
         }).timestamp()
 
-    val obsRatesMapShared: Observable[TM] = obsRatesMap.share().doOnError(errorLogger).retry()
+    
+    def retryWithDelay(delay: Long, unit: TimeUnit): Func1[Observable[_ <: Throwable], Observable[_]] = {
+        new Func1[Observable[_ <: Throwable], Observable[_]] {
+            override def call(obs: Observable[_ <: Throwable]): Observable[_] = {
+                obs.flatMap[Any](new Func1[Throwable, Observable[_]] {
+                    override def call(t1: Throwable): Observable[_] = {
+                        Observable.timer(delay, unit)
+                    }
+                })
+            }
+        }
+    }
+
+    val obsRatesMapShared: Observable[TM] = obsRatesMap
+            .doOnError(errorLogger)
+            .retryWhen(retryWithDelay(5, TimeUnit.SECONDS))
+            .share()
 
 
     val ratesMapToString = new Func1[TM, String] {
