@@ -72,19 +72,19 @@ class EventPipes(yahooFinance: YahooFinance) {
     }
 
 
-    val memory = new CTM()
+    val ctmCache = new CTM()
 
     obsRatesMapShared.subscribe(new Action1[TM] {
-        override def call(cm: TM): Unit = {
-            memory.add(cm)
+        override def call(tm: TM): Unit = {
+            ctmCache.add(tm)
         }
     })
 
 
-    val obsRatesCCMLast: Observable[CTM] = Observable.just(memory)
+    val obsRatesCTMLast: Observable[CTM] = Observable.just(ctmCache)
 
     val obsRatesCollectedStringLast: Observable[String] =
-        obsRatesCCMLast.map[String](new Func1[CTM, String] {
+        obsRatesCTMLast.map[String](new Func1[CTM, String] {
             override def call(cmList: CTM): String = {
                 cmList.asScala.view.map { cm =>
                     ratesMapToString.call(cm)
