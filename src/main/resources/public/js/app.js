@@ -1,5 +1,14 @@
 $(document).ready(function () {
 
+    $("#slider").noUiSlider({
+        start: [1],
+        connect: false,
+        range: {
+            'min': 1440,
+            'max': 1
+        }
+    });
+
     var ui = new (function () {
 
         var GRAPHS = [
