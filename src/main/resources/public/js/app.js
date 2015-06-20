@@ -1,13 +1,38 @@
 $(document).ready(function () {
 
-    $("#slider").noUiSlider({
-        start: [1439],
-        connect: false,
-        range: {
-            'min': 0,
-            'max': 1439
-        }
-    });
+    new (function () {
+
+        var MAX_MIN_BACK = 1440;
+        var SAMPLE_PERIOD = 200;
+
+        var $slider = $("#slider");
+
+        $slider.noUiSlider({
+            start: [MAX_MIN_BACK - 1],
+            connect: false,
+            range: {
+                'min': 0,
+                'max': MAX_MIN_BACK - 1
+            }
+        });
+
+        var obsMinBack = Rx.Observable.fromEvent($(document), "click mousemove")
+            .sample(SAMPLE_PERIOD)
+            .map(function () {
+                return $slider.val();
+            })
+            .distinctUntilChanged()
+            .map(function (s) {
+                return parseFloat(s);
+            })
+            .map(function (n) {
+                return MAX_MIN_BACK - n;
+            });
+
+        obsMinBack.subscribe(function (n) {
+            ui.setGraphsMinBack(n);
+        });
+    })();
 
     var ui = new (function () {
 
