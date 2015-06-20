@@ -39,7 +39,7 @@ class EventPipes(yahooFinance: YahooFinance) {
             }
         }).timestamp()
 
-    
+
     def retryWithDelay(delay: Long, unit: TimeUnit): Func1[Observable[_ <: Throwable], Observable[_]] = {
         new Func1[Observable[_ <: Throwable], Observable[_]] {
             override def call(obs: Observable[_ <: Throwable]): Observable[_] = {
@@ -67,9 +67,9 @@ class EventPipes(yahooFinance: YahooFinance) {
     }
 
 
-    val obsRatesString: Observable[String] = {
+    val obsRatesStringShared: Observable[String] = {
         obsRatesMapShared.map[String](ratesMapToString)
-    }
+    }.share()
 
 
     val ctmCache = new CTM()
@@ -93,11 +93,11 @@ class EventPipes(yahooFinance: YahooFinance) {
         })
 
 
-    val obsMessageRates: Observable[String] = obsRatesString.map(new Func1[String, String] {
-        override def call(body: String): String = MessageRates.encode(body)
-    })
-
-    val obsMessageRatesShared: Observable[String] = obsMessageRates.share()
+    val obsMessageRatesShared: Observable[String] = obsRatesStringShared.map[String](new Func1[String, String] {
+        override def call(body: String): String = {
+            MessageRates.encode(body)
+        }
+    }).share()
 
 
     val obsMessageRatesCollection: Observable[String] = obsRatesCollectedStringLast.map(new Func1[String, String] {
