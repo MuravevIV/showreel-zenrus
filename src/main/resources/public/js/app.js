@@ -61,7 +61,8 @@ $(document).ready(function () {
         Message.Type = {
             RATES: 0,
             RATES_COLLECTION: 1,
-            SERVER_TIMESTAMP: 2
+            SERVER_TIMESTAMP: 2,
+            RATES_LATEST: 3
         };
         Message.getType = function (message) {
             return message.charCodeAt(0);
@@ -162,6 +163,15 @@ $(document).ready(function () {
                 return clientTimestamp - serverTimestamp;
             });
 
+        this.obsRatesLatest = rxMessageStreamHot
+            .filter(function (message) {
+                return (Message.getType(message) === Message.Type.RATES_LATEST);
+            })
+            .map(function (message) {
+                return Message.getBody(message);
+            })
+            .map(decodeRatesMessage);
+
         this.start = function () {
             rxMessageStreamHot.connect();
         }
@@ -171,6 +181,7 @@ $(document).ready(function () {
     eventPipes.obsRates.subscribe(ui.pushGraphData);
     eventPipes.obsRatesCollection.subscribe(ui.pushGraphDataList);
     eventPipes.obsTimeshift.subscribe(ui.setGraphsTimeshift);
+    eventPipes.obsRatesLatest.subscribe(ui.changeValues);
 
     eventPipes.start();
 });
