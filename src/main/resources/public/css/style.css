@@ -67,6 +67,10 @@ body{
 	display: table;
 }
 
+.charts {
+	padding: 35px;
+}
+
 .vcenter {
 	display: table-cell;
 	width: 100%;
