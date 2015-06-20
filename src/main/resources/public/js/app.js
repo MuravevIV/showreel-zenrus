@@ -1,11 +1,11 @@
 $(document).ready(function () {
 
     $("#slider").noUiSlider({
-        start: [1],
+        start: [1439],
         connect: false,
         range: {
-            'min': 1440,
-            'max': 1
+            'min': 0,
+            'max': 1439
         }
     });
 
