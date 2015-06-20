@@ -2,6 +2,7 @@ package com.ilyamur.showreel.zenrus
 
 import java.lang.{Boolean => JBoolean, Long => JLong}
 import java.util.Currency
+import java.util.concurrent.atomic.AtomicReference
 import java.util.concurrent.{ConcurrentLinkedQueue, TimeUnit}
 
 import com.ilyamur.bixbite.finance.yahoo.YahooFinance
@@ -119,7 +120,33 @@ class EventPipes(yahooFinance: YahooFinance) {
             }
         })
 
+
+    val obsMessageRateLatest: Observable[String] = {
+
+        val _refRateLatest = new AtomicReference[String]()
+
+        obsRatesStringShared.subscribe(new Action1[String] () {
+            override def call(s: String): Unit = {
+                _refRateLatest.set(s)
+            }
+        })
+
+        val obsRateLatest: Observable[String] = Observable.create(new OnSubscribe[String] {
+            override def call(s: Subscriber[_ >: String]): Unit = {
+                s.onNext(_refRateLatest.get())
+                s.onCompleted()
+            }
+        })
+
+        obsRateLatest.map[String](new Func1[String, String] {
+            override def call(body: String): String = {
+                MessageRateLatest.encode(body)
+            }
+        })
+    }
+
     val obsMessages: Observable[String] = Observable.merge(
+        obsMessageRateLatest,
         obsMessageRatesShared,
         obsMessageRatesCollection,
         obsMessageServerTimestamp
