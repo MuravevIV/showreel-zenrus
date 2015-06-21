@@ -7,14 +7,25 @@ $(document).ready(function () {
 
         var $slider = $("#slider");
 
+        var fSliderValMin = 0;
+        var fSliderValMax = 100;
+
         $slider.noUiSlider({
-            start: [MAX_MIN_BACK - 1],
+            start: fSliderValMax,
             connect: false,
             range: {
-                'min': 0,
-                'max': MAX_MIN_BACK - 1
+                'min': fSliderValMin,
+                'max': fSliderValMax
             }
         });
+
+        var scale = d3.scale.log();
+
+        var logValMax = scale(MAX_MIN_BACK);
+
+        var sliderValToLog = function (sliderVal) {
+            return logValMax - (sliderVal / fSliderValMax) * logValMax;
+        };
 
         var obsMinBack = Rx.Observable.fromEvent($(document), "click mousemove")
             .sample(SAMPLE_PERIOD)
@@ -22,12 +33,9 @@ $(document).ready(function () {
                 return $slider.val();
             })
             .distinctUntilChanged()
-            .map(function (s) {
-                return parseFloat(s);
-            })
-            .map(function (n) {
-                return MAX_MIN_BACK - n;
-            });
+            .map(parseFloat)
+            .map(sliderValToLog)
+            .map(scale.invert);
 
         obsMinBack.subscribe(function (n) {
             ui.setGraphsMinBack(n);
