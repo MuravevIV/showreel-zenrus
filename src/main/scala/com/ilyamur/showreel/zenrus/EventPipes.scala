@@ -9,7 +9,7 @@ import com.ilyamur.bixbite.finance.yahoo.YahooFinance
 import org.slf4j.LoggerFactory
 import rx.Observable.OnSubscribe
 import rx.functions.{Action1, Func1}
-import rx.schedulers.Timestamped
+import rx.schedulers.{Schedulers, Timestamped}
 import rx.{Observable, Subscriber}
 
 import scala.collection.JavaConverters._
@@ -31,14 +31,20 @@ class EventPipes(yahooFinance: YahooFinance) {
 
 
     val obsRatesMap: Observable[TM] =
-        Observable.timer(0, 5, TimeUnit.SECONDS).map[M](new Func1[JLong, M] {
-            override def call(num: JLong): M = {
-                yahooFinance.getCurrencyRateMap(Map(
-                    "USDRUB" ->(Currency.getInstance("USD"), Currency.getInstance("RUB")),
-                    "EURRUB" ->(Currency.getInstance("EUR"), Currency.getInstance("RUB"))
-                ))
-            }
-        }).timestamp()
+        Observable.timer(0, 5, TimeUnit.SECONDS)
+                .observeOn(Schedulers.io())
+                .map[M](
+                    new Func1[JLong, M] {
+                        override def call(num: JLong): M = {
+                            yahooFinance.getCurrencyRateMap(Map(
+                                "USDRUB" ->(Currency.getInstance("USD"), Currency.getInstance("RUB")),
+                                "EURRUB" ->(Currency.getInstance("EUR"), Currency.getInstance("RUB"))
+                            ))
+                        }
+                    }
+                )
+                .observeOn(Schedulers.computation())
+                .timestamp()
 
 
     def retryWithDelay(delay: Long, unit: TimeUnit): Func1[Observable[_ <: Throwable], Observable[_]] = {
@@ -125,7 +131,7 @@ class EventPipes(yahooFinance: YahooFinance) {
 
         val _refRateLatest = new AtomicReference[String]()
 
-        obsRatesStringShared.subscribe(new Action1[String] () {
+        obsRatesStringShared.subscribe(new Action1[String]() {
             override def call(s: String): Unit = {
                 _refRateLatest.set(s)
             }
