@@ -32,6 +32,7 @@
                 <websocket.port>8000</websocket.port>
                 <log.dir>${env.OPENSHIFT_LOG_DIR}</log.dir>
                 <app.host>http://${env.OPENSHIFT_APP_DNS}</app.host>
+                <data.dir>${env.OPENSHIFT_DATA_DIR}</data.dir>
             </properties>
         </profile>
 
@@ -44,6 +45,7 @@
                 <websocket.port>8000</websocket.port>
                 <log.dir>${project.basedir}/logs</log.dir>
                 <app.host>http://${server.ip}:${server.port}</app.host>
+                <data.dir>${project.basedir}/data/</data.dir>
             </properties>
         </profile>
 
@@ -119,6 +121,18 @@
             <groupId>com.twitter</groupId>
             <artifactId>finagle-core_2.10</artifactId>
             <version>6.11.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>1.4.187</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.jolbox</groupId>
+            <artifactId>bonecp</artifactId>
+            <version>0.8.0.RELEASE</version>
         </dependency>
 
     </dependencies>
@@ -235,6 +249,10 @@
                         <systemProperty>
                             <key>app.host</key>
                             <value>${app.host}</value>
+                        </systemProperty>
+                        <systemProperty>
+                            <key>data.dir</key>
+                            <value>${data.dir}</value>
                         </systemProperty>
                     </systemProperties>
                 </configuration>

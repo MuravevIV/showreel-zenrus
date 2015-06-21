@@ -20,9 +20,11 @@ object Server extends FinatraServerWebosket with Macwire {
     lazy val executionService = Executors.newCachedThreadPool()
     lazy val futurePool = FuturePool(executionService)
     lazy val eventPipes = wire[EventPipes]
+    lazy val datasourceProvider = wire[BoneCPDatasourceProvider]
     lazy val appController = wire[AppController]
 
     val healthChecker = wire[HealthChecker]
+    val h2Database = wire[H2Database]
 
     register(appController)
 
