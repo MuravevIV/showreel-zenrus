@@ -253,7 +253,7 @@ var D3Graph = function (selector) {
             var w = $(window);
             return [w.width(), w.height()];
         })
-        .sample(250)
+        .debounce(250)
         .subscribe(function () {
             updateDimensions();
             redraw();
