@@ -230,18 +230,39 @@ $(document).ready(function () {
 
 var D3Graph = function (selector) {
 
-    var baseWidth = 300;
-    var baseHeight = 140;
-
     var margin = {top: 0, right: 15, bottom: 20, left: 50};
 
-    var width = baseWidth - margin.left - margin.right;
-    var height = baseHeight - margin.top - margin.bottom;
+    var _baseWidth;
+    var _baseHeight;
+    var _width;
+    var _height;
+
+    var updateDimensions = function () {
+        var g = $(selector).find(".rickshaw_graph");
+        _baseWidth = g.width();
+        _baseHeight = g.height();
+        _width = _baseWidth - margin.left - margin.right;
+        _height = _baseHeight - margin.top - margin.bottom;
+    };
+
+    updateDimensions();
+
+    Rx.Observable.fromEvent($(window), "resize")
+        .startWith('initial event')
+        .map(function () {
+            var w = $(window);
+            return [w.width(), w.height()];
+        })
+        .sample(250)
+        .subscribe(function () {
+            updateDimensions();
+            redraw();
+        });
 
     var svg = d3.select(selector).select(".rickshaw_graph")
         .append("svg")
-        .attr("width", baseWidth)
-        .attr("height", baseHeight)
+        .attr("width", _baseWidth)
+        .attr("height", _baseHeight)
         .attr("style", "margin: 0 auto;")
         .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
@@ -286,13 +307,13 @@ var D3Graph = function (selector) {
 
     var xScale = d3.time.scale()
         .domain([d3.time.minute.offset(now, -_minBack), now])
-        .range([0, width]);
+        .range([0, _width]);
 
     var yDomain = getYDomain(dataset);
 
     var yScale = d3.scale.linear()
         .domain([yDomain.min, yDomain.max])
-        .range([height, 0]);
+        .range([_height, 0]);
 
     var customTimeFormat = d3.time.format.multi([
         ["%Lms", function(d) { return d.getMilliseconds(); }],
@@ -318,7 +339,7 @@ var D3Graph = function (selector) {
 
     svg.append("g")
         .attr("class", "x axis")
-        .attr("transform", "translate(0," + height + ")")
+        .attr("transform", "translate(0," + _height + ")")
         .call(xAxis);
 
     svg.append("g")
@@ -333,8 +354,8 @@ var D3Graph = function (selector) {
         .append("rect")
         .attr("x", 0)
         .attr("y", 0)
-        .attr("width", width)
-        .attr("height", height);
+        .attr("width", _width)
+        .attr("height", _height);
 
     var lineFunction = d3.svg.line()
         .x(function (d) {
@@ -357,8 +378,14 @@ var D3Graph = function (selector) {
 
         var now = new Date();
 
+        d3.select(selector).select(".rickshaw_graph").select("svg")
+            .attr("width", _baseWidth)
+            .attr("height", _baseHeight);
+
+        xScale.range([0, _width]);
         xScale.domain([d3.time.minute.offset(now, -_minBack), now]);
 
+        yScale.range([_height, 0]);
         var yDomain = getYDomain(dataset);
         yScale.domain([yDomain.min, yDomain.max]);
 

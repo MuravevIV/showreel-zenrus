@@ -77,3 +77,7 @@ body{
 	vertical-align: middle;
 	text-align: center;
 }
+
+.rickshaw_graph {
+	min-height: 140px;
+}
