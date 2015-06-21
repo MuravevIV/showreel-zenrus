@@ -59,11 +59,15 @@ class H2Database(datasourceProvider: BoneCPDatasourceProvider) {
                                  |)
                                """.stripMargin
 
-    private val insertCurrencyRUBQuery = "INSERT INTO currency VALUES (1, 'RUB')"
+    private def getInsertCurrencyQuery(currencyName: String): String = {
+        s"INSERT INTO currency VALUES (1, '$currencyName')"
+    }
 
-    private val insertCurrencyUSDQuery = "INSERT INTO currency VALUES (2, 'USD')"
+    private val insertCurrencyRUBQuery = getInsertCurrencyQuery("RUB")
 
-    private val insertCurrencyEURQuery = "INSERT INTO currency VALUES (3, 'EUR')"
+    private val insertCurrencyUSDQuery = getInsertCurrencyQuery("USD")
+
+    private val insertCurrencyEURQuery = getInsertCurrencyQuery("EUR")
 
     private def silenceSqlErrors[A](sqlErrorCodes: Int*)(defaultValue: A)(f: => A): A = {
         try {
