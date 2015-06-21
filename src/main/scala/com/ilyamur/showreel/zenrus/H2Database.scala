@@ -86,8 +86,8 @@ class H2Database(datasourceProvider: BoneCPDatasourceProvider) {
         }
     }
 
-    private def insertRowIfNotExists(query: String)(conn: Connection): Unit = {
-        silenceSqlErrors(SQL_ERROR_CODE.PRIMARY_KEY_VIOLATION)() {
+    private def insertRowIfNotExists(query: String)(conn: Connection): Int = {
+        silenceSqlErrors(SQL_ERROR_CODE.PRIMARY_KEY_VIOLATION)(0) {
             update(query)(conn)
         }
     }
