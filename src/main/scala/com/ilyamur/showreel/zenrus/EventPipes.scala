@@ -148,7 +148,7 @@ class EventPipes(yahooFinance: YahooFinance) {
     val obsMessages: Observable[String] = Observable.merge(
         obsMessageServerTimestamp,
         obsMessageRateLatest,
-        obsMessageRatesCollection,
-        obsMessageRatesShared
+        obsMessageRatesShared,
+        obsMessageRatesCollection
     )
 }
