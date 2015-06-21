@@ -34,6 +34,7 @@ body{
 .value {
 	font-family: 'Oxygen', sans-serif;
 	font-size: 8vmax;
+	height: 12vmax;
 	font-weight: bold;
 	transition: all 250ms ease;
 }
