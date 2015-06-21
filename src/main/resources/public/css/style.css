@@ -4,9 +4,8 @@ html, body {
 }
 
 body{
-	min-width: 1000px;
+	min-width: 600px;
 	width: auto !important;
-	width: 1000px;
 }
 
 .main {
@@ -33,10 +32,10 @@ body{
 }
 
 .value {
-	font-family: Oxygen, sans-serif;
-	font-size: 70px;
+	font-family: 'Oxygen', sans-serif;
+	font-size: 8vmax;
 	font-weight: bold;
-
+	transition: all 250ms ease;
 }
 
 .type {
@@ -79,5 +78,5 @@ body{
 }
 
 .rickshaw_graph {
-	min-height: 140px;
+	min-height: 200px;
 }
