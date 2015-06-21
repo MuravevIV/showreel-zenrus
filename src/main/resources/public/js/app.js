@@ -286,9 +286,21 @@ var D3Graph = function (selector) {
         .domain([yDomain.min, yDomain.max])
         .range([height, 0]);
 
+    var customTimeFormat = d3.time.format.multi([
+        ["%Lms", function(d) { return d.getMilliseconds(); }],
+        ["%Ss", function(d) { return d.getSeconds(); }],
+        ["%H:%M", function(d) { return d.getMinutes(); }],
+        ["%H", function(d) { return d.getHours(); }],
+        ["%a %d", function(d) { return d.getDay() && d.getDate() != 1; }],
+        ["%b %d", function(d) { return d.getDate() != 1; }],
+        ["%B", function(d) { return d.getMonth(); }],
+        ["%Y", function() { return true; }]
+    ]);
+
     var xAxis = d3.svg.axis()
         .scale(xScale)
         .orient("bottom")
+        .tickFormat(customTimeFormat)
         .ticks(5);
 
     var yAxis = d3.svg.axis()
