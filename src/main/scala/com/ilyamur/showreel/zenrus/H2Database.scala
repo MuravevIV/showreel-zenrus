@@ -95,7 +95,7 @@ class H2Database(datasourceProvider: BoneCPDatasourceProvider) {
         }
     }
 
-    private def insertRowIfNotExists(query: String)(conn: Connection): Int = {
+    private def insertIfNotExists(query: String)(conn: Connection): Int = {
         silenceSqlErrors(SQL_ERROR_CODE.PRIMARY_KEY_VIOLATION)(0) {
             update(query)(conn)
         }
@@ -108,9 +108,9 @@ class H2Database(datasourceProvider: BoneCPDatasourceProvider) {
             createTableIfNotExists(createCurrencyTableQuery)(conn)
             createTableIfNotExists(createRateTableQuery)(conn)
 
-            insertRowIfNotExists(insertCurrencyRUBQuery)(conn)
-            insertRowIfNotExists(insertCurrencyUSDQuery)(conn)
-            insertRowIfNotExists(insertCurrencyEURQuery)(conn)
+            insertIfNotExists(insertCurrencyRUBQuery)(conn)
+            insertIfNotExists(insertCurrencyUSDQuery)(conn)
+            insertIfNotExists(insertCurrencyEURQuery)(conn)
 
             conn.commit()
         }
