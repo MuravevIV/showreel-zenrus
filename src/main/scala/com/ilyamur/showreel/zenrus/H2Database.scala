@@ -42,22 +42,27 @@ class H2Database(datasourceProvider: BoneCPDatasourceProvider) {
         val PRIMARY_KEY_VIOLATION = 23505
     }
 
-    private val createCurrencyTableQuery = """
-                                     |CREATE TABLE currency (
-                                     |    id_currency NUMBER(4) NOT NULL,
-                                     |	   CONSTRAINT xpk_currency PRIMARY KEY (id_currency),
-                                     |	   name VARCHAR(20) NOT NULL
-                                     |)
-                                   """.stripMargin
+    private val createCurrencyTableQuery =
+        """
+          |CREATE TABLE currency (
+          |    id_currency NUMBER(4) NOT NULL,
+          |	   CONSTRAINT xpk_currency PRIMARY KEY (id_currency),
+          |	   name VARCHAR(20) NOT NULL,
+          |    CONSTRAINT u0_currency UNIQUE (name)
+          |)
+        """.stripMargin
 
-    private val createRateTableQuery = """
-                                 |CREATE TABLE rate (
-                                 |	   id_currency_from NUMBER(4) NOT NULL,
-                                 |	   id_currency_to NUMBER(4) NOT NULL,
-                                 |	   reg_timestamp NUMBER(20) NOT NULL,
-                                 |	   value NUMBER(20) NOT NULL
-                                 |)
-                               """.stripMargin
+    private val createRateTableQuery =
+        """
+          |CREATE TABLE rate (
+          |	   id_currency_from NUMBER(4) NOT NULL,
+          |    CONSTRAINT xfk0_rate FOREIGN KEY (id_currency_from) REFERENCES currency(id_currency),
+          |	   id_currency_to NUMBER(4) NOT NULL,
+          |    CONSTRAINT xfk1_rate FOREIGN KEY (id_currency_to) REFERENCES currency(id_currency),
+          |	   reg_timestamp TIMESTAMP NOT NULL,
+          |	   value DECIMAL(20, 4) NOT NULL
+          |)
+        """.stripMargin
 
     private def getInsertCurrencyQuery(currencyName: String): String = {
         s"INSERT INTO currency VALUES (1, '$currencyName')"
