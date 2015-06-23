@@ -2,8 +2,8 @@ package com.ilyamur.showreel.zenrus
 
 import java.lang.{Boolean => JBoolean, Long => JLong}
 import java.util.Currency
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicReference
-import java.util.concurrent.{ConcurrentLinkedQueue, TimeUnit}
 
 import com.ilyamur.bixbite.finance.yahoo.YahooFinance
 import org.slf4j.LoggerFactory
@@ -12,15 +12,12 @@ import rx.functions.{Action1, Func1}
 import rx.schedulers.{Schedulers, Timestamped}
 import rx.{Observable, Subscriber}
 
-import scala.collection.JavaConverters._
-
-class EventPipes(yahooFinance: YahooFinance) {
+class EventPipes(yahooFinance: YahooFinance, persistenceLoad: PersistenceLoad) {
 
     private val _log = LoggerFactory.getLogger(getClass)
 
     type M = Map[String, Double]
     type TM = Timestamped[M]
-    type CTM = ConcurrentLinkedQueue[TM]
 
 
     val errorLogger: Action1[Throwable] = new Action1[Throwable] {
@@ -67,26 +64,18 @@ class EventPipes(yahooFinance: YahooFinance) {
     }.share()
 
 
-    val ctmCache = new CTM()
+    val obsRatesCollectedStringLast: Observable[String] = {
 
-    obsRatesMapShared.subscribe(new Action1[TM] {
-        override def call(tm: TM): Unit = {
-            ctmCache.add(tm)
-        }
-    })
+        type LTM = List[TM]
 
-
-    val obsRatesCTMLast: Observable[CTM] = Observable.just(ctmCache)
-
-    val obsRatesCollectedStringLast: Observable[String] =
-        obsRatesCTMLast.map[String](new Func1[CTM, String] {
-            override def call(cmList: CTM): String = {
-                cmList.asScala.view.map { cm =>
-                    ratesMapToString.call(cm)
+        persistenceLoad.obsLatestLTM.map[String](new Func1[LTM, String] {
+            override def call(tmList: LTM): String = {
+                tmList.view.map { tm =>
+                    ratesMapToString.call(tm)
                 }.mkString("|")
             }
         })
-
+    }
 
     val obsMessageRatesShared: Observable[String] = obsRatesStringShared.map[String](new Func1[String, String] {
         override def call(body: String): String = {

@@ -25,6 +25,8 @@ object Server extends FinatraServerWebosket with Macwire {
 
     val healthChecker = wire[HealthChecker]
     val h2Database = wire[H2Database]
+    val persistenceSave = wire[PersistenceSave]
+    lazy val persistenceLoad = wire[PersistenceLoad]
 
     register(appController)
 
