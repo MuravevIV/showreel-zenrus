@@ -1,8 +1,10 @@
 package com.ilyamur.showreel.zenrus
 
-import java.sql.{SQLException, Connection, PreparedStatement}
+import java.sql._
 
 import org.slf4j.LoggerFactory
+
+import scala.collection.mutable.ArrayBuffer
 
 class H2Database(datasourceProvider: BoneCPDatasourceProvider) {
 
@@ -25,11 +27,32 @@ class H2Database(datasourceProvider: BoneCPDatasourceProvider) {
         }
     }
 
-    private def onPreparedStatement[A](query: String)(f: PreparedStatement => A)(conn: Connection): A  = {
-        using (conn.prepareStatement(query))(f)
+    def onConnection[A](f: Connection => A): A = {
+        using(datasource.getConnection)(f)
     }
 
-    private def update(query: String)(conn: Connection): Int = {
+    def onPreparedStatement[A](query: String)(f: PreparedStatement => A)(conn: Connection): A = {
+        using(conn.prepareStatement(query))(f)
+    }
+
+    def reduceResultSet[R](stmt: PreparedStatement)(f: (R, ResultSet) => R)(r: R): R = {
+        using(stmt.executeQuery()) { rset =>
+            var memo = r
+            while (rset.next()) {
+                memo = f(memo, rset)
+            }
+            memo
+        }
+    }
+
+    def listResultSet[R](stmt: PreparedStatement)(f: ResultSet => R): List[R] = {
+        reduceResultSet[ArrayBuffer[R]](stmt) { case (memo, rset) =>
+            memo.+=(f(rset))
+            memo
+        }(new ArrayBuffer[R]()).toList
+    }
+
+    def update(query: String)(conn: Connection): Int = {
         onPreparedStatement(query) { stmt =>
             stmt.executeUpdate()
         }(conn)
@@ -65,17 +88,11 @@ class H2Database(datasourceProvider: BoneCPDatasourceProvider) {
           |)
         """.stripMargin
 
-    private def getInsertCurrencyQuery(currencyName: String): String = {
-        s"INSERT INTO currency VALUES (1, '$currencyName')"
-    }
-
     private val createRateIndexQuery = "CREATE INDEX i0_rate ON rate(reg_timestamp)"
 
-    private val insertCurrencyRUBQuery = getInsertCurrencyQuery("RUB")
-
-    private val insertCurrencyUSDQuery = getInsertCurrencyQuery("USD")
-
-    private val insertCurrencyEURQuery = getInsertCurrencyQuery("EUR")
+    private val insertCurrencyRUBQuery = "INSERT INTO currency(id_currency, name) VALUES (1, 'RUB')"
+    private val insertCurrencyUSDQuery = "INSERT INTO currency(id_currency, name) VALUES (2, 'USD')"
+    private val insertCurrencyEURQuery = "INSERT INTO currency(id_currency, name) VALUES (3, 'EUR')"
 
     private def silenceSqlErrors[A](sqlErrorCodes: Int*)(defaultValue: A)(f: => A): A = {
         try {
