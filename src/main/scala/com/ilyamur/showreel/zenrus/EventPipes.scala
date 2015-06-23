@@ -47,21 +47,9 @@ class EventPipes(yahooFinance: YahooFinance) {
                 .timestamp()
 
 
-    def retryWithDelay(delay: Long, unit: TimeUnit): Func1[Observable[_ <: Throwable], Observable[_]] = {
-        new Func1[Observable[_ <: Throwable], Observable[_]] {
-            override def call(obs: Observable[_ <: Throwable]): Observable[_] = {
-                obs.flatMap[Any](new Func1[Throwable, Observable[_]] {
-                    override def call(t1: Throwable): Observable[_] = {
-                        Observable.timer(delay, unit)
-                    }
-                })
-            }
-        }
-    }
-
     val obsRatesMapShared: Observable[TM] = obsRatesMap
             .doOnError(errorLogger)
-            .retryWhen(retryWithDelay(5, TimeUnit.SECONDS))
+            .retryWhen(new RetryWithDelay(5, TimeUnit.SECONDS))
             .share()
 
 
