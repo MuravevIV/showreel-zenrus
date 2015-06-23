@@ -39,6 +39,7 @@ class H2Database(datasourceProvider: BoneCPDatasourceProvider) {
 
     private val SQL_ERROR_CODE = new {
         val TABLE_ALREADY_EXISTS = 42101
+        val INDEX_ALREADY_EXISTS = 42111
         val PRIMARY_KEY_VIOLATION = 23505
     }
 
@@ -68,6 +69,8 @@ class H2Database(datasourceProvider: BoneCPDatasourceProvider) {
         s"INSERT INTO currency VALUES (1, '$currencyName')"
     }
 
+    private val createRateIndexQuery = "CREATE INDEX i0_rate ON rate(reg_timestamp)"
+
     private val insertCurrencyRUBQuery = getInsertCurrencyQuery("RUB")
 
     private val insertCurrencyUSDQuery = getInsertCurrencyQuery("USD")
@@ -95,6 +98,12 @@ class H2Database(datasourceProvider: BoneCPDatasourceProvider) {
         }
     }
 
+    private def createIndexIfNotExists(query: String)(conn: Connection): Unit = {
+        silenceSqlErrors(SQL_ERROR_CODE.INDEX_ALREADY_EXISTS)() {
+            update(query)(conn)
+        }
+    }
+
     private def insertIfNotExists(query: String)(conn: Connection): Int = {
         silenceSqlErrors(SQL_ERROR_CODE.PRIMARY_KEY_VIOLATION)(0) {
             update(query)(conn)
@@ -107,6 +116,7 @@ class H2Database(datasourceProvider: BoneCPDatasourceProvider) {
 
             createTableIfNotExists(createCurrencyTableQuery)(conn)
             createTableIfNotExists(createRateTableQuery)(conn)
+            createIndexIfNotExists(createRateIndexQuery)(conn)
 
             insertIfNotExists(insertCurrencyRUBQuery)(conn)
             insertIfNotExists(insertCurrencyUSDQuery)(conn)
