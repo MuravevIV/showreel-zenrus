@@ -2,7 +2,8 @@ package com.ilyamur.showreel.zenrus
 
 import org.slf4j.LoggerFactory
 import rx.Observable.OnSubscribe
-import rx.schedulers.Timestamped
+import rx.functions.Func1
+import rx.schedulers.{Schedulers, Timestamped}
 import rx.{Observable, Subscriber}
 
 class PersistenceLoad(db: H2Database) {
@@ -51,11 +52,22 @@ class PersistenceLoad(db: H2Database) {
         }
     }
 
-    val obsLatestLTM: Observable[LTM] = Observable.create(new OnSubscribe[LTM] {
-
-        override def call(s: Subscriber[_ >: LTM]): Unit = {
-            s.onNext(getLatestLTM)
-            s.onCompleted()
-        }
-    })
+    val obsLatestLTM: Observable[LTM] = Observable
+            .create(
+                new OnSubscribe[Unit] {
+                    override def call(s: Subscriber[_ >: Unit]): Unit = {
+                        s.onNext(())
+                        s.onCompleted()
+                    }
+                }
+            )
+            .observeOn(Schedulers.io())
+            .map[LTM](
+                new Func1[Unit, LTM]() {
+                    override def call(unit: Unit): LTM = {
+                        getLatestLTM
+                    }
+                }
+            )
+            .observeOn(Schedulers.computation())
 }

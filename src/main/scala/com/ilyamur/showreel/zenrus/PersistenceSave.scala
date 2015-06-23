@@ -7,7 +7,7 @@ import java.util.concurrent.TimeUnit
 import org.slf4j.LoggerFactory
 import rx.Observable
 import rx.functions.{Action1, Func1}
-import rx.schedulers.Timestamped
+import rx.schedulers.{Schedulers, Timestamped}
 
 class PersistenceSave(eventPipes: EventPipes, h2Database: H2Database) {
 
@@ -71,13 +71,15 @@ class PersistenceSave(eventPipes: EventPipes, h2Database: H2Database) {
     }
 
     private val obsPersistInDatabase: Observable[Unit] = eventPipes.obsRatesMapShared
-            .map(
+            .observeOn(Schedulers.io())
+            .map[Unit](
                 new Func1[TM, Unit]() {
                     override def call(tm: TM): Unit = {
                         persist(tm)
                     }
                 }
             )
+            .observeOn(Schedulers.computation())
 
     obsPersistInDatabase
             .doOnError(errorLogger)
