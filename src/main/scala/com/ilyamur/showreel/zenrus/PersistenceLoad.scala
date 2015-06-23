@@ -1,8 +1,10 @@
 package com.ilyamur.showreel.zenrus
 
+import java.util.concurrent.TimeUnit
+
 import org.slf4j.LoggerFactory
 import rx.Observable.OnSubscribe
-import rx.functions.Func1
+import rx.functions.{Action1, Func1}
 import rx.schedulers.{Schedulers, Timestamped}
 import rx.{Observable, Subscriber}
 
@@ -13,6 +15,12 @@ class PersistenceLoad(db: H2Database) {
     private type M = Map[String, Double]
     private type TM = Timestamped[M]
     private type LTM = List[TM]
+
+    private val errorLogger: Action1[Throwable] = new Action1[Throwable] {
+        override def call(e: Throwable): Unit = {
+            _log.error("", e)
+        }
+    }
 
     val latestLTMQuery =
         """
@@ -70,4 +78,6 @@ class PersistenceLoad(db: H2Database) {
                 }
             )
             .observeOn(Schedulers.computation())
+            .doOnError(errorLogger)
+            .retryWhen(new RetryWithDelay(5, TimeUnit.SECONDS))
 }
