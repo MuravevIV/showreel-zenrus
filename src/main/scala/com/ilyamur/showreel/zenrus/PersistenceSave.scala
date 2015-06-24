@@ -84,5 +84,11 @@ class PersistenceSave(eventPipes: EventPipes, h2Database: H2Database) {
     obsPersistInDatabase
             .doOnError(errorLogger)
             .retryWhen(new RetryWithDelay(1, TimeUnit.SECONDS))
-            .publish().connect()
+            .subscribe(
+                new Action1[Unit]() {
+                    override def call(t1: Unit): Unit = {
+                        // sink
+                    }
+                }
+            )
 }
