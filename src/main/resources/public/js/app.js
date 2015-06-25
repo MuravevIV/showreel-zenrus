@@ -276,7 +276,7 @@ var D3Graph = function (selector) {
 
     var dataset = [];
 
-    var getYDomain = function (dataset) {
+    var getYDomain = function () {
         if (dataset.length == 0) {
             return {
                 min: 0,
@@ -309,7 +309,7 @@ var D3Graph = function (selector) {
         .domain([d3.time.minute.offset(now, -_minBack), now])
         .range([0, _width]);
 
-    var yDomain = getYDomain(dataset);
+    var yDomain = getYDomain();
 
     var yScale = d3.scale.linear()
         .domain([yDomain.min, yDomain.max])
@@ -386,7 +386,7 @@ var D3Graph = function (selector) {
         xScale.domain([d3.time.minute.offset(now, -_minBack), now]);
 
         yScale.range([_height, 0]);
-        var yDomain = getYDomain(dataset);
+        var yDomain = getYDomain();
         yScale.domain([yDomain.min, yDomain.max]);
 
         var lineFunction = d3.svg.line()
