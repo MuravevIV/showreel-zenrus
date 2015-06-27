@@ -81,3 +81,11 @@ body{
 .rickshaw_graph {
 	min-height: 200px;
 }
+
+#github-glyphicon {
+    display: block;
+    background: url('../images/GitHub-Mark-32px.png');
+    height: 32px;
+    width: 32px;
+    margin: 0 auto;
+}
