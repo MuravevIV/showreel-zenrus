@@ -5,8 +5,9 @@ import java.util.concurrent.TimeUnit
 
 import com.ilyamur.bixbite.http.simple.HttpExecutorSimple
 import org.slf4j.LoggerFactory
-import rx.functions.{Func1, Action1}
-import rx.{Observable, Observer}
+import rx.Observable
+import rx.functions.{Action1, Func1}
+import rx.schedulers.Schedulers
 
 class HealthChecker(httpExecutorSimple: HttpExecutorSimple) {
 
@@ -15,14 +16,20 @@ class HealthChecker(httpExecutorSimple: HttpExecutorSimple) {
 
     private val _log = LoggerFactory.getLogger(getClass)
 
-    val obsHealthCheck = Observable.timer(PERIOD_SEC, PERIOD_SEC, TimeUnit.SECONDS).map[Unit](new Func1[JLong, Unit]() {
-        override def call(t1: JLong): Unit = {
-            val response = httpExecutorSimple.execute(CHECK_URL)
-            if (!response.isSuccess) {
-                _log.warn("'{}' request responds code={}", CHECK_URL, response.code)
-            }
-        }
-    }).doOnError(new ErrorLoggingAction1(_log))
+    val obsHealthCheck = Observable.timer(PERIOD_SEC, PERIOD_SEC, TimeUnit.SECONDS)
+            .observeOn(Schedulers.io())
+            .map[Unit](
+                new Func1[JLong, Unit]() {
+                    override def call(t1: JLong): Unit = {
+                        val response = httpExecutorSimple.execute(CHECK_URL)
+                        if (!response.isSuccess) {
+                            _log.warn("'{}' request responds code={}", CHECK_URL, response.code)
+                        }
+                    }
+                }
+            )
+            .observeOn(Schedulers.computation())
+            .doOnError(new ErrorLoggingAction1(_log))
             .retryWhen(new RetryWithDelay(5, TimeUnit.SECONDS))
             .share()
     
