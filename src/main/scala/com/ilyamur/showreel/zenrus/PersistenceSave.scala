@@ -82,7 +82,7 @@ class PersistenceSave(eventPipes: EventPipes, h2Database: H2Database) {
             .observeOn(Schedulers.computation())
 
     obsPersistInDatabase
-            .doOnError(errorLogger)
+            .doOnError(new ErrorLoggingAction1(_log))
             .retryWhen(new RetryWithDelay(1, TimeUnit.SECONDS))
             .subscribe(
                 new Action1[Unit]() {

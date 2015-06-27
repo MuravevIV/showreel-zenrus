@@ -19,14 +19,6 @@ class EventPipes(yahooFinance: YahooFinance, persistenceLoad: PersistenceLoad) {
     type M = Map[String, Double]
     type TM = Timestamped[M]
 
-
-    val errorLogger: Action1[Throwable] = new Action1[Throwable] {
-        override def call(e: Throwable): Unit = {
-            _log.error("", e)
-        }
-    }
-
-
     val obsRatesMap: Observable[TM] =
         Observable.timer(0, 5, TimeUnit.SECONDS)
                 .observeOn(Schedulers.io())
@@ -45,7 +37,7 @@ class EventPipes(yahooFinance: YahooFinance, persistenceLoad: PersistenceLoad) {
 
 
     val obsRatesMapShared: Observable[TM] = obsRatesMap
-            .doOnError(errorLogger)
+            .doOnError(new ErrorLoggingAction1(_log))
             .retryWhen(new RetryWithDelay(5, TimeUnit.SECONDS))
             .share()
 

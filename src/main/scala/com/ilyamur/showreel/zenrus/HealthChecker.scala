@@ -14,12 +14,6 @@ class HealthChecker(httpExecutorSimple: HttpExecutorSimple) {
     private val PERIOD_SEC = 300
 
     private val _log = LoggerFactory.getLogger(getClass)
-    
-    val errorLogger: Action1[Throwable] = new Action1[Throwable] {
-        override def call(e: Throwable): Unit = {
-            _log.error("", e)
-        }
-    }
 
     val obsHealthCheck = Observable.timer(PERIOD_SEC, PERIOD_SEC, TimeUnit.SECONDS).map[Unit](new Func1[JLong, Unit]() {
         override def call(t1: JLong): Unit = {
@@ -28,7 +22,7 @@ class HealthChecker(httpExecutorSimple: HttpExecutorSimple) {
                 _log.warn("'{}' request responds code={}", CHECK_URL, response.code)
             }
         }
-    }).doOnError(errorLogger)
+    }).doOnError(new ErrorLoggingAction1(_log))
             .retryWhen(new RetryWithDelay(5, TimeUnit.SECONDS))
             .share()
     

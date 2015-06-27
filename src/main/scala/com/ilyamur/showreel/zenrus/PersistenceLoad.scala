@@ -78,6 +78,6 @@ class PersistenceLoad(db: H2Database) {
                 }
             )
             .observeOn(Schedulers.computation())
-            .doOnError(errorLogger)
+            .doOnError(new ErrorLoggingAction1(_log))
             .retryWhen(new RetryWithDelay(5, TimeUnit.SECONDS))
 }
