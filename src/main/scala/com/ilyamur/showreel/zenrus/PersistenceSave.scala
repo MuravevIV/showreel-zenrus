@@ -81,14 +81,15 @@ class PersistenceSave(eventPipes: EventPipes, h2Database: H2Database) {
             )
             .observeOn(Schedulers.computation())
 
-    obsPersistInDatabase
+    private val obsPersistInDatabaseSafe = obsPersistInDatabase
             .doOnError(new ErrorLoggingAction1(_log))
             .retryWhen(new RetryWithDelay(1, TimeUnit.SECONDS))
-            .subscribe(
-                new Action1[Unit]() {
-                    override def call(t1: Unit): Unit = {
-                        // sink
-                    }
-                }
-            )
+
+    obsPersistInDatabaseSafe.subscribe(
+        new Action1[Unit]() {
+            override def call(unit: Unit): Unit = {
+                // event sink
+            }
+        }
+    )
 }

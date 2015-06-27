@@ -16,11 +16,11 @@ class HealthChecker(httpExecutorSimple: HttpExecutorSimple) {
 
     private val _log = LoggerFactory.getLogger(getClass)
 
-    val obsHealthCheck = Observable.timer(PERIOD_SEC, PERIOD_SEC, TimeUnit.SECONDS)
+    private val obsHealthCheckOnce = Observable.just(())
             .observeOn(Schedulers.io())
             .map[Unit](
-                new Func1[JLong, Unit]() {
-                    override def call(t1: JLong): Unit = {
+                new Func1[Unit, Unit]() {
+                    override def call(unit: Unit): Unit = {
                         val response = httpExecutorSimple.execute(CHECK_URL)
                         if (!response.isSuccess) {
                             _log.warn("'{}' request responds code={}", CHECK_URL, response.code)
@@ -29,11 +29,22 @@ class HealthChecker(httpExecutorSimple: HttpExecutorSimple) {
                 }
             )
             .observeOn(Schedulers.computation())
-            .doOnError(new ErrorLoggingAction1(_log))
-            .retryWhen(new RetryWithDelay(5, TimeUnit.SECONDS))
-            .share()
-    
-    obsHealthCheck.subscribe(new Action1[Unit] {
+
+    private val obsHealthCheckPeriodically = Observable.timer(PERIOD_SEC, PERIOD_SEC, TimeUnit.SECONDS)
+            .flatMap(
+                new Func1[JLong, Observable[Unit]]() {
+                    override def call(t1: JLong): Observable[Unit] = {
+                        obsHealthCheckOnce
+                    }
+                }
+            )
+
+    private val obsHealthCheckPeriodicallySafe =
+        obsHealthCheckPeriodically
+                .doOnError(new ErrorLoggingAction1(_log))
+                .retryWhen(new RetryWithDelay(5, TimeUnit.SECONDS))
+
+    obsHealthCheckPeriodicallySafe.subscribe(new Action1[Unit] {
         override def call(unit: Unit): Unit = {
             // event sink
         }

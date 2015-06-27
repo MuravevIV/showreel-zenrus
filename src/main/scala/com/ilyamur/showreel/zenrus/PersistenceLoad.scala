@@ -3,10 +3,9 @@ package com.ilyamur.showreel.zenrus
 import java.util.concurrent.TimeUnit
 
 import org.slf4j.LoggerFactory
-import rx.Observable.OnSubscribe
+import rx.Observable
 import rx.functions.{Action1, Func1}
 import rx.schedulers.{Schedulers, Timestamped}
-import rx.{Observable, Subscriber}
 
 class PersistenceLoad(db: H2Database) {
 
@@ -22,7 +21,7 @@ class PersistenceLoad(db: H2Database) {
         }
     }
 
-    val latestLTMQuery =
+    private val latestLTMQuery =
         """
           |SELECT
           |    r.reg_timestamp,
@@ -43,7 +42,7 @@ class PersistenceLoad(db: H2Database) {
           |    ca.id_currency
         """.stripMargin
 
-    def getLatestLTM: LTM = {
+    private def getLatestLTM: LTM = {
         db.onConnection { conn =>
             db.onPreparedStatement(latestLTMQuery) { stmt =>
                 db.listResultSet(stmt) { rset =>
@@ -60,15 +59,7 @@ class PersistenceLoad(db: H2Database) {
         }
     }
 
-    val obsLatestLTM: Observable[LTM] = Observable
-            .create(
-                new OnSubscribe[Unit] {
-                    override def call(s: Subscriber[_ >: Unit]): Unit = {
-                        s.onNext(())
-                        s.onCompleted()
-                    }
-                }
-            )
+    private val obsLatestLTM: Observable[LTM] = Observable.just(())
             .observeOn(Schedulers.io())
             .map[LTM](
                 new Func1[Unit, LTM]() {
@@ -78,6 +69,9 @@ class PersistenceLoad(db: H2Database) {
                 }
             )
             .observeOn(Schedulers.computation())
-            .doOnError(new ErrorLoggingAction1(_log))
-            .retryWhen(new RetryWithDelay(5, TimeUnit.SECONDS))
+
+    val obsLatestLTMSafe: Observable[LTM] =
+        obsLatestLTM
+                .doOnError(new ErrorLoggingAction1(_log))
+                .retryWhen(new RetryWithDelay(5, TimeUnit.SECONDS))
 }

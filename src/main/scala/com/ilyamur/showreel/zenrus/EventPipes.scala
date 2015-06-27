@@ -19,27 +19,40 @@ class EventPipes(yahooFinance: YahooFinance, persistenceLoad: PersistenceLoad) {
     type M = Map[String, Double]
     type TM = Timestamped[M]
 
-    val obsRatesMap: Observable[TM] =
+    val obsRatesMapOnce: Observable[M] = Observable.just(())
+            .observeOn(Schedulers.io())
+            .map[M](
+                new Func1[Unit, M] {
+                    override def call(unit: Unit): M = {
+                        yahooFinance.getCurrencyRateMap(Map(
+                            "USDRUB" ->(Currency.getInstance("USD"), Currency.getInstance("RUB")),
+                            "EURRUB" ->(Currency.getInstance("EUR"), Currency.getInstance("RUB"))
+                        ))
+                    }
+                }
+            )
+            .observeOn(Schedulers.computation())
+
+    val obsRatesMapPeriodically: Observable[M] =
         Observable.timer(0, 5, TimeUnit.SECONDS)
-                .observeOn(Schedulers.io())
-                .map[M](
-                    new Func1[JLong, M] {
-                        override def call(num: JLong): M = {
-                            yahooFinance.getCurrencyRateMap(Map(
-                                "USDRUB" ->(Currency.getInstance("USD"), Currency.getInstance("RUB")),
-                                "EURRUB" ->(Currency.getInstance("EUR"), Currency.getInstance("RUB"))
-                            ))
+                .flatMap(
+                    new Func1[JLong, Observable[M]]() {
+                        override def call(t1: JLong): Observable[M] = {
+                            obsRatesMapOnce
                         }
                     }
                 )
-                .observeOn(Schedulers.computation())
-                .timestamp()
 
+    val obsRatesMapPeriodicallySafe: Observable[M] =
+        obsRatesMapPeriodically
+                .doOnError(new ErrorLoggingAction1(_log))
+                .retryWhen(new RetryWithDelay(5, TimeUnit.SECONDS))
 
-    val obsRatesMapShared: Observable[TM] = obsRatesMap
-            .doOnError(new ErrorLoggingAction1(_log))
-            .retryWhen(new RetryWithDelay(5, TimeUnit.SECONDS))
-            .share()
+    val obsRatesMapPeriodicallySafeTimestamped: Observable[TM] =
+        obsRatesMapPeriodicallySafe.timestamp()
+
+    val obsRatesMapShared: Observable[TM] =
+        obsRatesMapPeriodicallySafeTimestamped.share()
 
 
     val ratesMapToString = new Func1[TM, String] {
@@ -60,7 +73,7 @@ class EventPipes(yahooFinance: YahooFinance, persistenceLoad: PersistenceLoad) {
 
         type LTM = List[TM]
 
-        persistenceLoad.obsLatestLTM.map[String](new Func1[LTM, String] {
+        persistenceLoad.obsLatestLTMSafe.map[String](new Func1[LTM, String] {
             override def call(tmList: LTM): String = {
                 tmList.view.map { tm =>
                     ratesMapToString.call(tm)
