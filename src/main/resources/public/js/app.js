@@ -284,10 +284,14 @@ var D3Graph = function (selector) {
             };
         }
         var goldenRatio = 1.6180;
-        var dataMin = _.min(dataset, function (d) {
+        var yDomainLeftLimit = now.getTime() - (_minBack * 60 * 1000);
+        var yDomainDataset = _.filter(dataset, function (d) {
+            return d.t.getTime() > yDomainLeftLimit;
+        });
+        var dataMin = _.min(yDomainDataset, function (d) {
             return d.v;
         }).v;
-        var dataMax = _.max(dataset, function (d) {
+        var dataMax = _.max(yDomainDataset, function (d) {
             return d.v;
         }).v;
         if (dataMin == dataMax) {
