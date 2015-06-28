@@ -88,7 +88,7 @@ $(document).ready(function () {
             _.each(GRAPHS, function (graph) {
                 _.each(ratesLists, function (ratesList, key) {
                     if (graph.id == key) {
-                        graph.graph.pushList(ratesList);
+                        graph.graph.pushHeadList(ratesList);
                     }
                 });
             });
@@ -411,19 +411,26 @@ var D3Graph = function (selector) {
             .call(yAxis);
     };
 
-    var pushList = this.pushList = function (ratesList) {
-        ratesList.forEach(function (rate) {
-            dataset.push({
-                ts: rate.ts,
-                t: new Date(rate.ts + _tsTimeshift),
-                v: rate.value
-            });
+    var pushRate = function(d, rate) {
+        d.push({
+            ts: rate.ts,
+            t: new Date(rate.ts + _tsTimeshift),
+            v: rate.value
         });
+    };
+
+    this.pushHeadList = function (ratesList) {
+        var preDataset = [];
+        ratesList.forEach(function (rate) {
+            pushRate(preDataset, rate);
+        });
+        dataset = preDataset.concat(dataset);
         redraw();
     };
 
     this.push = function (rate) {
-        pushList([rate]);
+        pushRate(dataset, rate);
+        redraw();
     };
 
     this.setTimeshift = function (tsTimeshift) {
