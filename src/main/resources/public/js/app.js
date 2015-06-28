@@ -313,11 +313,73 @@ var D3Graph = function (selector) {
         .domain([d3.time.minute.offset(now, -_minBack), now])
         .range([0, _width]);
 
+    var updateXGrid = function () {
+
+        var xGrid = svg.selectAll("line.verticalGrid")
+            .data(xScale.ticks(5));
+
+        xGrid
+            .attr({
+                "x1": function(d){ return xScale(d);},
+                "x2": function(d){ return xScale(d);}
+            });
+
+        xGrid.enter()
+            .append("line")
+            .attr({
+                "class": "verticalGrid",
+                "x1": function(d){ return xScale(d);},
+                "x2": function(d){ return xScale(d);},
+                "y1": 0,
+                "y2": _height,
+                "fill": "none",
+                "shape-rendering": "crispEdges",
+                "stroke": "lightgrey",
+                "opacity": 0.7,
+                "stroke-width": 1
+            });
+
+        xGrid.exit().remove();
+    };
+
+    updateXGrid();
+
     var yDomain = getYDomain();
 
     var yScale = d3.scale.linear()
         .domain([yDomain.min, yDomain.max])
         .range([_height, 0]);
+
+    var updateYGrid = function () {
+
+        var yGrid = svg.selectAll("line.horizontalGrid")
+            .data(yScale.ticks(5));
+
+        yGrid
+            .attr({
+                "y1": function(d){ return yScale(d);},
+                "y2": function(d){ return yScale(d);}
+            });
+
+        yGrid.enter()
+            .append("line")
+            .attr({
+                "class": "horizontalGrid",
+                "x1": 0,
+                "x2": _width,
+                "y1": function(d){ return yScale(d);},
+                "y2": function(d){ return yScale(d);},
+                "fill": "none",
+                "shape-rendering": "crispEdges",
+                "stroke": "lightgrey",
+                "opacity": 0.7,
+                "stroke-width": 1
+            });
+
+        yGrid.exit().remove();
+    };
+
+    updateYGrid();
 
     var customTimeFormat = d3.time.format.multi([
         ["%Lms", function(d) { return d.getMilliseconds(); }],
@@ -389,9 +451,13 @@ var D3Graph = function (selector) {
         xScale.range([0, _width]);
         xScale.domain([d3.time.minute.offset(now, -_minBack), now]);
 
+        updateXGrid();
+
         yScale.range([_height, 0]);
         var yDomain = getYDomain();
         yScale.domain([yDomain.min, yDomain.max]);
+
+        updateYGrid();
 
         var lineFunction = d3.svg.line()
             .x(function (d) {
