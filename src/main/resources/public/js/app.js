@@ -288,6 +288,12 @@ var D3Graph = function (selector) {
         var yDomainDataset = _.filter(dataset, function (d) {
             return d.t.getTime() > yDomainLeftLimit;
         });
+        if (yDomainDataset.length == 0) {
+            return {
+                min: 0,
+                max: 100
+            };
+        }
         var dataMin = _.min(yDomainDataset, function (d) {
             return d.v;
         }).v;
