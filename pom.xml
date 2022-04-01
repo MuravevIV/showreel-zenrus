@@ -12,8 +12,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <encoding>UTF-8</encoding>
         <scala.version>2.10.3</scala.version>
-        <maven.compiler.source>1.7</maven.compiler.source>
-        <maven.compiler.target>1.7</maven.compiler.target>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.fork>true</maven.compiler.fork>
     </properties>
 
@@ -51,16 +51,6 @@
 
     </profiles>
 
-    <repositories>
-
-        <repository>
-            <id>com.github.sprsquish</id>
-            <url>https://raw.github.com/sprsquish/mvn-repo/master/</url>
-            <layout>default</layout>
-        </repository>
-
-    </repositories>
-
     <dependencies>
 
         <dependency>
@@ -72,7 +62,7 @@
         <dependency>
             <groupId>com.twitter</groupId>
             <artifactId>finatra_2.10</artifactId>
-            <version>1.5.2</version>
+            <version>1.6.0</version>
         </dependency>
 
         <dependency>
@@ -112,12 +102,6 @@
         </dependency>
 
         <dependency>
-            <groupId>com.github.sprsquish</groupId>
-            <artifactId>finagle-websockets_2.10</artifactId>
-            <version>6.8.1</version>
-        </dependency>
-
-        <dependency>
             <groupId>com.twitter</groupId>
             <artifactId>finagle-core_2.10</artifactId>
             <version>6.11.1</version>
@@ -142,7 +126,6 @@
         <finalName>${project.name}</finalName>
 
         <sourceDirectory>src/main/scala</sourceDirectory>
-        <testSourceDirectory>src/test/scala</testSourceDirectory>
 
         <plugins>
 
@@ -152,11 +135,6 @@
                 <artifactId>scala-maven-plugin</artifactId>
                 <version>3.1.0</version>
                 <configuration>
-                    <args>
-                        <arg>-unchecked</arg>
-                        <arg>-deprecation</arg>
-                        <arg>-explaintypes</arg>
-                    </args>
                     <launchers>
                         <launcher>
                             <id>main</id>
@@ -170,18 +148,20 @@
                             <goal>compile</goal>
                             <goal>testCompile</goal>
                         </goals>
-                        <configuration>
-                            <args>
-                                <arg>-make:transitive</arg>
-                                <arg>-dependencyfile</arg>
-                                <arg>${project.build.directory}/.scala_dependencies</arg>
-                            </args>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
 
-            <!-- invoke scalatest tests -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+
+<!--            &lt;!&ndash; invoke scalatest tests &ndash;&gt;
             <plugin>
                 <groupId>org.scalatest</groupId>
                 <artifactId>scalatest-maven-plugin</artifactId>
@@ -194,7 +174,7 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
+            </plugin>-->
 
             <!-- copy resources -->
             <plugin>
